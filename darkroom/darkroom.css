@@ -1,0 +1,48 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #000;
+  font-family: monospace;
+}
+
+canvas {
+  display: block;
+}
+
+#menu-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #111;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 1s ease;
+}
+
+.loading-text {
+  color: #fff;
+  font-size: 24px;
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+}
+
+@media (max-width: 600px) {
+  .loading-text { font-size: 18px; }
+}
+
+#loading-canvas {
+  position: absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+}

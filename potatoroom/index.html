@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LION'S MANE</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<link rel="icon" href="LION/favicon.ico" type="image/x-icon">
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<div id="videoModal">
+  <video id="myVideo" controls preload="none"></video>
+  <button onclick="closeVideo()">X</button>
+</div>
+
+<div class="bg-wrap">
+  <img src="imgs/lionsMANE.png" class="bg-img" alt="">
+</div>
+
+<div class="grass-area">
+  <svg id="grassSVG" viewBox="0 0 1600 500" preserveAspectRatio="xMidYMax slice">
+    <defs>
+      <linearGradient id="grassGradient" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#ffe3f0"/>
+        <stop offset="55%" stop-color="#f2bfd7"/>
+        <stop offset="100%" stop-color="#d8a0bd"/>
+      </linearGradient>
+    </defs>
+    <path id="grassPath" fill="url(#grassGradient)" />
+  </svg>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
