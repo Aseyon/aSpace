@@ -188,6 +188,7 @@ cookieImage.onload = () => {
     COOKIE_HEIGHT = cookieImage.naturalHeight / cookieImage.naturalWidth * COOKIE_WIDTH;
     createObject(50, 50, '../darkroom/vds/contentwarning1.mp4', COOKIE_WIDTH, COOKIE_HEIGHT);
     createObject(200, 300, '../darkroom/vds/blackops2_1.mp4', COOKIE_WIDTH, COOKIE_HEIGHT);
+    createObject(800, 200, '../darkroom/vds/minePark1.mp4', COOKIE_WIDTH, COOKIE_HEIGHT);
     createObject(500, 100, '../darkroom/vds/contentwarning2.mp4', COOKIE_WIDTH, COOKIE_HEIGHT);
     BG_NATURAL_HEIGHT = bgImg.naturalHeight;
 };
