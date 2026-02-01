@@ -97,6 +97,17 @@ const mp4Icons = [
         glitchTimer: 0
     },
     {
+        x: 1900,
+        y: 600,
+        video: "vds/minePark1.mp4",
+        width: 48,
+        height: 48,
+        activated: false,
+        glitchActive: false,
+        glitchFrame: 0,
+        glitchTimer: 0
+    },
+    {
         x: 150,
         y: 900,
         video: "vds/blackops2_1.mp4",

@@ -1,134 +1,46 @@
-document.addEventListener("gesturestart", e => e.preventDefault());
-document.addEventListener("gesturechange", e => e.preventDefault());
-document.addEventListener("gestureend", e => e.preventDefault());
-
-document.addEventListener("touchmove", e => {
-    if (e.scale && e.scale !== 1) {
-        e.preventDefault();
-    }
-}, {
-    passive: false
-});
-
-let lastTouchEnd = 0;
-document.addEventListener("touchend", e => {
-    const now = Date.now();
-    if (now - lastTouchEnd <= 300) {
-        e.preventDefault();
-    }
-    lastTouchEnd = now;
-}, {
-    passive: false
-});
-
-
-document.addEventListener("DOMContentLoaded", () => {
-});
-
-if (window.matchMedia("(max-width: 980px)").matches) {
-    document.body.classList.add("mobile-no-game");
-}
-
-const thumbGrid = document.getElementById("thumbGrid");
-const photoArea = document.getElementById("photoArea");
-const prevThumb = document.getElementById("prev");
-const nextThumb = document.getElementById("next");
-
-let current = 0;
-const captions = [
-    "Descrição 1",
-    "Descrição 2",
-    "Descrição 3",
-    "Descrição 4",
-    "Descrição 5",
-    "Descrição 6",
-    "Descrição 7",
-    "Descrição 8",
-];
-
-function thumbSVG(i) {
-    const svgns = "http://www.w3.org/2000/svg";
-    const svg = document.createElementNS(svgns, "svg");
-    svg.setAttribute("viewBox", "0 0 320 220");
-    svg.setAttribute("width", "100%");
-    svg.setAttribute("height", "100%");
-    return svg;
-}
-
-for (let i = 0; i < 8; i++) {
-    const div = document.createElement("div");
-    div.className = "thumb";
-    div.dataset.index = i;
-    div.appendChild(thumbSVG(i));
-    div.addEventListener("click", () => showPhoto(i));
-    thumbGrid.appendChild(div);
-}
-
-function showPhoto(i) {
-    current = i;
-    photoArea.innerHTML = "";
-    const img = document.createElement("img");
-    img.src = "nostalgia1.png";
-    img.alt = captions[i % captions.length] || "Memória";
-    img.style.width = "100%";
-    img.style.height = "100%";
-    img.style.objectFit = "cover";
-    img.style.borderRadius = "8px";
-    img.style.boxShadow = "0 8px 24px rgba(0,0,0,0.4)";
-    img.style.transition = "opacity 0.5s ease";
-    img.style.opacity = 0;
-    photoArea.appendChild(img);
-    requestAnimationFrame(() => {
-        img.style.opacity = 1;
-    });
-}
-
-prevThumb &&
-    prevThumb.addEventListener("click", () => showPhoto((current - 1 + 8) % 8));
-nextThumb &&
-    nextThumb.addEventListener("click", () => showPhoto((current + 1) % 8));
-
-showPhoto(0);
-
 (function() {
     const svg = document.getElementById("grassSVG");
     const path = document.getElementById("grassPath");
     if (!svg || !path) return;
-    const W = 1600,
-        H = 500,
-        baseY = 390,
-        strands = 60;
+
+    const W = 1600;
+    const H = 500;
+    const baseY = 390;
+    const strands = 60;
+
     const dna = Array.from({
         length: strands
-    }, (_, i) => ({
+    }, () => ({
         height: 110 + Math.random() * 70,
         lean: (Math.random() - 0.5) * 20,
         curve: 20 + Math.random() * 35,
-        tipOffset: (Math.random() - 0.5) * 35,
         waveSpeed: 0.4 + Math.random() * 1.1,
-        waveOffset: Math.random() * 1000,
+        waveOffset: Math.random() * 1000
     }));
-    let rawX = NaN,
-        smoothX = NaN,
-        influence = 0,
-        lastMove = 0;
-    svg.addEventListener("mousemove", (e) => {
+
+    let rawX = NaN;
+    let smoothX = NaN;
+    let influence = 0;
+    let lastMove = 0;
+
+    svg.addEventListener("mousemove", e => {
         const r = svg.getBoundingClientRect();
         rawX = (e.clientX - r.left) * (W / r.width);
         influence = 1;
         lastMove = performance.now();
     });
-    svg.addEventListener("mouseleave", () => (rawX = NaN));
+
+    svg.addEventListener("mouseleave", () => rawX = NaN);
 
     function generate(t) {
         if (!Number.isNaN(rawX)) {
             if (Number.isNaN(smoothX)) smoothX = rawX;
             smoothX += (rawX - smoothX) * 0.12;
         } else if (!Number.isNaN(smoothX)) {
-            smoothX += (W * 0.5 - smoothX) * (0.12 * 0.15);
+            smoothX += (W * 0.5 - smoothX) * 0.018;
         }
-        const dt = performance.now() - lastMove;
-        if (dt > 80) {
+
+        if (performance.now() - lastMove > 80) {
             influence *= 0.94;
             if (influence < 0.01) influence = 0;
         }
@@ -137,29 +49,34 @@ showPhoto(0);
         for (let i = 0; i < strands; i++) {
             const x = (i / (strands - 1)) * W;
             const g = dna[i];
+
             const globalSway = Math.sin(t * g.waveSpeed + g.waveOffset) * 6;
             let localWind = 0;
-            if (influence > 0 && !Number.isNaN(smoothX)) {
+
+            if (influence && !Number.isNaN(smoothX)) {
                 const dist = Math.abs(smoothX - x);
                 if (dist < 280) localWind = (1 - dist / 280) * 80 * influence;
             }
+
             const top = baseY - g.height * 0.75 + Math.sin(i * 0.45 + t * 1.1) * 8;
             const sway = g.lean + globalSway + localWind * 0.16;
-            const cp1 = [x - g.curve * 0.5, baseY - 40];
-            const cp2 = [x + sway * 0.2, top + 28];
-            const tip = [x + sway, top];
-            const cp3 = [x + sway * 0.2, top + 22];
-            const cp4 = [x + g.curve * 0.5, baseY - 38];
-            const next = [x + W / strands, baseY];
-            d += `C ${cp1} ${cp2} ${tip} C ${cp3} ${cp4} ${next} `;
+
+            d += `
+                C ${x - g.curve * 0.5} ${baseY - 40}
+                  ${x + sway * 0.2} ${top + 28}
+                  ${x + sway} ${top}
+                C ${x + sway * 0.2} ${top + 22}
+                  ${x + g.curve * 0.5} ${baseY - 38}
+                  ${x + W / strands} ${baseY}
+            `;
         }
+
         d += `L ${W} ${H} Z`;
         return d;
     }
 
     function animate() {
-        const t = performance.now() / 900;
-        path.setAttribute("d", generate(t));
+        path.setAttribute("d", generate(performance.now() / 900));
         requestAnimationFrame(animate);
     }
 
@@ -173,9 +90,7 @@ const MAX_CHARS = 20;
 function truncateCaption(caption) {
     const full = caption.dataset.fulltext;
     caption.innerText =
-        full.length > MAX_CHARS ? full.substring(0, MAX_CHARS) + "..." : full;
-    caption.style.height = "";
-    caption.style.maxHeight = "";
+        full.length > MAX_CHARS ? full.substring(0, MAX_CHARS) : full;
 }
 
 portraits.forEach((p) => {
@@ -245,12 +160,19 @@ portraits.forEach((p) => {
                 caption.style.maxHeight = "none";
             }
 
+            p.style.transform = "none";
+            p.style.zIndex = "";
+            p.getBoundingClientRect();
+
             const rect = wrapper.getBoundingClientRect();
             const scaleX = (window.innerWidth * 0.9) / rect.width;
             const scaleY = (window.innerHeight * 0.9) / rect.height;
             const maxScale = Math.min(scaleX, scaleY, 2.2);
-            const centerX = window.innerWidth / 2 - (rect.left + rect.width / 2);
-            const centerY = window.innerHeight / 2 - (rect.top + rect.height / 2);
+
+            const centerX =
+                window.innerWidth / 2 - (rect.left + rect.width / 2);
+            const centerY =
+                window.innerHeight / 2 - (rect.top + rect.height / 2);
 
             p.style.transform = `translate(${centerX}px, ${centerY}px) scale(${maxScale})`;
             p.style.zIndex = 70;
@@ -301,7 +223,6 @@ document.addEventListener("click", (e) => {
 window.addEventListener("load", updateAllSupports);
 window.addEventListener("resize", updateAllSupports);
 
-
 const bookWrap = document.getElementById("bookWrap");
 const book = document.getElementById("book");
 const coverFront = book.querySelector(".cover.front");
@@ -347,7 +268,6 @@ function centerBook() {
     bookWrap.style.transform = `translate(-50%, -50%) scale(${scale})`;
 }
 window.addEventListener("load", centerBook);
-window.addEventListener("resize", centerBook);
 
 function animateCatArms(action) {
     if (!catArms) return;
@@ -445,302 +365,98 @@ coverBack.addEventListener("click", closeBook);
 
 
 const bgm = document.getElementById("bgm");
+
 let started = false;
+const FADE_DURATION = 2500;
+const STEPS = 50;
 
 function startMusic() {
-    if (started) return;
+    if (started || !bgm) return;
+
+    started = true;
 
     bgm.volume = 0;
     bgm.load();
 
-    const fadeDuration = 2500;
-    const steps = 50;
-    const stepTime = fadeDuration / steps;
+    const stepTime = FADE_DURATION / STEPS;
+    const stepVolume = 1 / STEPS;
 
-    const onReady = () => {
-        bgm
-            .play()
-            .then(() => {
-                started = true;
+    const play = () => {
+        bgm.play().catch(err => {
+            console.warn("Falhou:", err);
+            started = false;
+        });
 
-                let vol = 0;
-                const fadeInterval = setInterval(() => {
-                    vol += 1 / steps;
-                    if (vol >= 1) {
-                        vol = 1;
-                        clearInterval(fadeInterval);
-                    }
-                    bgm.volume = vol;
-                }, stepTime);
+        let vol = 0;
+        const fade = setInterval(() => {
+            vol += stepVolume;
+            if (vol >= 1) {
+                bgm.volume = 1;
+                clearInterval(fade);
+            } else {
+                bgm.volume = vol;
+            }
+        }, stepTime);
 
-                removeListeners();
-            })
-            .catch(err => {
-                console.warn("Falhou:", err);
-            });
-
-        bgm.removeEventListener("canplaythrough", onReady);
+        removeListeners();
+        bgm.removeEventListener("canplaythrough", play);
     };
 
-    bgm.addEventListener("canplaythrough", onReady);
+    bgm.readyState >= 3 ?
+        play() :
+        bgm.addEventListener("canplaythrough", play, {
+            once: true
+        });
 }
-
-window.addEventListener("resize", () => {
-    if (opened) {
-        centerBook();
-    } else {
-        centerBook();
-    }
-});
 
 function removeListeners() {
-    window.removeEventListener("click", startMusic);
-    window.removeEventListener("keydown", startMusic);
-    window.removeEventListener("scroll", startMusic);
-    window.removeEventListener("touchstart", startMusic);
+    ["click", "keydown", "scroll"].forEach(evt =>
+        window.removeEventListener(evt, startMusic)
+    );
 }
 
-const particlesContainer = document.querySelector(".bg-particles");
-if (particlesContainer) {
-    for (let i = 0; i < 150; i++) {
-        const p = document.createElement("div");
-        p.className = "particle";
-        p.style.left = Math.random() * 100 + "vw";
-        p.style.top = Math.random() * 100 + "vh";
-        p.style.width = 2 + Math.random() * 4 + "px";
-        p.style.height = p.style.width;
-        p.style.opacity = 0.1 + Math.random() * 0.3;
-        p.style.animationDuration = 8 + Math.random() * 15 + "s";
-        particlesContainer.appendChild(p);
-    }
-}
+["click", "keydown", "scroll"].forEach(evt =>
+    window.addEventListener(evt, startMusic, {
+        once: true
+    })
+);
 
-const mist = document.querySelector(".bg-mist");
-if (mist) {
-    mist.style.background = `
-    radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%),
-    radial-gradient(circle, rgba(200,200,255,0.05) 0%, rgba(255,255,255,0) 60%)
-  `;
-}
-
-const extraParticlesContainer = document.createElement("div");
-extraParticlesContainer.className = "bg-particles-extra";
-document.querySelector(".bg-loop").appendChild(extraParticlesContainer);
-
-for (let i = 0; i < 50; i++) {
-    const p = document.createElement("div");
-    p.className = "particle-extra";
-    p.style.left = Math.random() * 100 + "vw";
-    p.style.top = Math.random() * 100 + "vh";
-    p.style.width = 2 + Math.random() * 4 + "px";
-    p.style.height = p.style.width;
-    p.style.animationDuration = 20 + Math.random() * 40 + "s";
-    extraParticlesContainer.appendChild(p);
-}
 
 document.addEventListener("DOMContentLoaded", () => {
-    const smokeContainer = document.querySelector(".portal-smoke");
-    const portalImage = document.querySelector(".portal-image");
-    smokeContainer.innerHTML = "";
-    const rect = portalImage.getBoundingClientRect();
-    const portalRadius = rect.width / 2;
-    const particleSize = 70;
-    const blurPush = 20;
-    const radius = portalRadius - particleSize / 2 + blurPush;
-    const particles = 36;
 
-    for (let i = 0; i < particles; i++) {
-        const p = document.createElement("div");
-        p.className = "smoke-part";
-        const angle = (i / particles) * 360;
-        p.style.setProperty("--angle", `${angle}deg`);
-        p.style.setProperty("--radius", `${radius}px`);
-        p.style.setProperty("--wiggle", `${Math.random() * 8 + 3}deg`);
-        p.style.setProperty("--push", `${Math.random() * 4 + 2}px`);
-        p.style.setProperty("--dur", `${3 + Math.random() * 2}s`);
-        p.style.transform = `translate(-50%, -50%) rotate(${angle}deg) translate(${radius}px)`;
-        smokeContainer.appendChild(p);
-    }
-});
+    const fitText = () => {
+        document.querySelectorAll(".text-block").forEach(block => {
+            const p = block.querySelector("p");
+            const polaroid = block.closest(".page-layout")
+                ?.querySelector(".polaroid");
 
-function fitTextToPolaroid() {
-    document.querySelectorAll(".text-block").forEach((block) => {
-        const polaroid = block.closest(".page-layout").querySelector(".polaroid");
-        const p = block.querySelector("p");
-        if (!p || !polaroid) return;
-        let fontSize = 18;
-        p.style.fontSize = fontSize + "px";
-        const maxHeight = polaroid.clientHeight;
-        while (p.scrollHeight > maxHeight && fontSize > 6) {
-            fontSize -= 1;
-            p.style.fontSize = fontSize + "px";
-        }
-    });
-}
+            if (!p || !polaroid) return;
 
-window.addEventListener("load", fitTextToPolaroid);
-window.addEventListener("resize", fitTextToPolaroid);
+            let size = 18;
+            const maxHeight = polaroid.clientHeight;
 
-document.addEventListener("DOMContentLoaded", () => {
-    const vinheta = document.getElementById("vinheta-topo");
-    const frame = document.getElementById("frame-jogo");
-    const closeBtn = document.getElementById("close-game");
-    const bgm = document.getElementById("bgm");
-    const gamePath = "c2-sans-fight/index.html";
-    let isDragging = false;
-    let startY = 0;
-    let currentY = 0;
-    const threshold = window.innerHeight * 0.3;
-    const minMove = 5;
-
-    function fadeAudio(audio, from, to, duration = 500) {
-        if (!audio) return;
-        const step = 50;
-        const steps = duration / step;
-        const increment = (to - from) / steps;
-        let vol = from;
-        audio.volume = from;
-        audio.play().catch(() => {});
-        const interval = setInterval(() => {
-            vol += increment;
-            if ((increment > 0 && vol >= to) || (increment < 0 && vol <= to)) {
-                vol = to;
-                clearInterval(interval);
-                if (to === 0) audio.pause();
+            p.style.fontSize = size + "px";
+            while (p.scrollHeight > maxHeight && size > 6) {
+                size--;
+                p.style.fontSize = size + "px";
             }
-            audio.volume = vol;
-        }, step);
-    }
+        });
+    };
 
-    function startDrag(y) {
-        isDragging = true;
-        startY = y;
-        currentY = 0;
-        frame.src = gamePath;
-        frame.style.transition = "none";
-        vinheta.style.transition = "none";
-    }
+    let resizeRAF;
+    window.addEventListener("resize", () => {
+        cancelAnimationFrame(resizeRAF);
+        resizeRAF = requestAnimationFrame(fitText);
+    });
 
-    function doDrag(y) {
-        if (!isDragging) return;
-        currentY = y - startY;
-        if (currentY < 0) currentY = 0;
-        if (currentY > minMove) {
-            frame.style.top = `${currentY - window.innerHeight}px`;
-            vinheta.style.top = `${currentY}px`;
-        }
-    }
-
-    function endDrag() {
-        if (!isDragging) return;
-        isDragging = false;
-        frame.style.transition = "top 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55)";
-        vinheta.style.transition = "top 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55)";
-        if (currentY > threshold) {
-            frame.style.top = "0";
-            vinheta.classList.add("hidden");
-            closeBtn.classList.add("show");
-            fadeAudio(bgm, bgm.volume, 0, 1000);
-        } else {
-            frame.style.top = "-100%";
-            vinheta.style.top = "0";
-            vinheta.classList.remove("hidden");
-            closeBtn.classList.remove("show");
-            fadeAudio(bgm, bgm.volume, 1, 1000);
-        }
-        currentY = 0;
-    }
-
-    function closeGame() {
-        frame.style.top = "-100%";
-        vinheta.style.top = "0";
-        vinheta.classList.remove("hidden");
-        closeBtn.classList.remove("show");
-        fadeAudio(bgm, bgm.volume, 1, 1000);
-        frame.src = "";
-    }
-
-    vinheta.addEventListener("mousedown", (e) => startDrag(e.clientY));
-    document.addEventListener("mousemove", (e) => doDrag(e.clientY));
-    document.addEventListener("mouseup", endDrag);
-    vinheta.addEventListener("touchstart", (e) => startDrag(e.touches[0].clientY));
-    document.addEventListener("touchmove", (e) => doDrag(e.touches[0].clientY));
-    document.addEventListener("touchend", endDrag);
-    closeBtn.addEventListener("click", closeGame);
+    window.addEventListener("load", fitText);
 });
 
 window.addEventListener("load", () => {
     document.documentElement.classList.remove("loading");
-
     const preload = document.getElementById("preload");
     if (!preload) return;
-
+    preload.style.transition = "opacity .6s ease";
     preload.style.opacity = "0";
-    preload.style.transition = "opacity 0.6s ease";
-
-    setTimeout(() => {
-        preload.remove();
-    }, 600);
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    const isMobile = window.matchMedia("(max-width: 768px)").matches;
-    let started = false;
-    const bgmPC = document.getElementById("bgm");
-    const bgmMobile = document.getElementById("bgm-mobile");
-    const mobileBtn = document.getElementById("mobile-audio-btn");
-
-    function fadeIn(audio, targetVolume = 1, duration = 2500) {
-        if (!audio) return;
-        let steps = 50;
-        let stepTime = duration / steps;
-        let vol = audio.volume;
-        let increment = (targetVolume - vol) / steps;
-        const fade = setInterval(() => {
-            vol += increment;
-            if ((increment > 0 && vol >= targetVolume) || (increment < 0 && vol <= targetVolume)) {
-                vol = targetVolume;
-                clearInterval(fade);
-            }
-            audio.volume = vol;
-        }, stepTime);
-    }
-
-    function setupLoop(audio) {
-        if (!audio || audio.loopSetupDone) return;
-        audio.loopSetupDone = true;
-        audio.addEventListener("ended", () => {
-            audio.currentTime = 0;
-            audio.play().catch(err => console.warn("Erro ao repetir:", err));
-        });
-    }
-
-    if (isMobile) {
-        if (bgmPC) {
-            bgmPC.pause();
-            bgmPC.currentTime = 0;
-        }
-        if (mobileBtn && bgmMobile) {
-            mobileBtn.style.display = "block";
-            mobileBtn.addEventListener("click", () => {
-                if (started) return;
-                started = true;
-                bgmMobile.volume = 0;
-                bgmMobile.play().then(() => fadeIn(bgmMobile, 0.5)).catch(err => console.warn("Mobile bloqueou:", err));
-                setupLoop(bgmMobile);
-                mobileBtn.remove();
-            });
-        }
-    } else {
-        if (bgmPC) {
-            if (bgmMobile) {
-                bgmMobile.pause();
-                bgmMobile.currentTime = 0;
-            }
-            bgmPC.volume = 0;
-            bgmPC.play().then(() => fadeIn(bgmPC, 1)).catch(err => console.warn("Falhou no PC:", err));
-            setupLoop(bgmPC);
-        }
-        if (mobileBtn) mobileBtn.remove();
-    }
+    setTimeout(() => preload.remove(), 600);
 });

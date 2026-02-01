@@ -7,12 +7,27 @@ let currentIndex = 0;
 let lastIndex = 0;
 const isMobile = window.innerWidth <= 768;
 
-const darkRoomButton = buttons.find(btn => btn.dataset.action === "darkroom");
+const routes = {
+    headspace: {
+        desktop: "headspace/headspace.html",
+        mobile: "underMemorie/index.html",
+        mobileLabel: "UNDER MEM"
+    },
+    darkroom: {
+        desktop: "darkroom/darkroom.html",
+        mobile: "lionMane/index.html",
+        mobileLabel: "LION'S MANE"
+    }
+};
 
-if (isMobile && darkRoomButton) {
-    darkRoomButton.textContent = "LION'S MANE";
-    const side = darkRoomButton.closest(".menu-side");
-    if (side) side.classList.remove("disabled");
+if (isMobile) {
+    buttons.forEach(btn => {
+        const config = routes[btn.dataset.action];
+        if (config?.mobileLabel) {
+            btn.textContent = config.mobileLabel;
+            btn.closest(".menu-side")?.classList.remove("disabled");
+        }
+    });
 }
 
 function updateSelection() {
@@ -32,13 +47,14 @@ function playConfirmSound() {
 }
 
 function goTo(action) {
+    const config = routes[action];
+    if (!config) return;
+
     menuOverlay.classList.add("fade-out");
     playConfirmSound();
+
     setTimeout(() => {
-        if (action === "headspace") window.location.href = "headspace/headspace.html";
-        if (action === "darkroom") {
-            window.location.href = isMobile ? "potatoroom/index.html" : "darkroom/darkroom.html";
-        }
+        window.location.href = isMobile ? config.mobile : config.desktop;
     }, 600);
 }
 
@@ -90,8 +106,8 @@ function handleMenuLoad() {
 
 window.addEventListener("load", handleMenuLoad);
 
-window.addEventListener("pageshow", event => {
-    if (event.persisted) window.location.reload();
+window.addEventListener("pageshow", e => {
+    if (e.persisted) window.location.reload();
 });
 
 updateSelection();

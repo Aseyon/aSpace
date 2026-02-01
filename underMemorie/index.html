@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <link rel="icon" href="sans_fav/favicon.ico">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Undertale Battle Screen</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="battle-screen">
+
+    <div id="sans">
+  <img id="sans_head" src="imgs/sans_head.png" alt="Sans Head">
+  <img id="sans_middle" src="imgs/sans_middle.png" alt="Sans Middle">
+  <img id="sans_pants" src="imgs/sans_pants.png" alt="Sans Pants">
+</div>
+
+    <div id="dialog-box">
+  * Bem-vindo às minhas memórias!
+</div>
+
+
+    <div id="stats">
+      <span id="player-name">ACE</span>
+      <span id="player-lv">LV 1</span>
+      <span id="player-hp">HP <span id="hp-bar"></span> 20 / 20</span>
+    </div>
+
+    <div id="menu">
+      <div id="options">
+        <div class="menu-option signatures">SIG</div>
+        <div class="menu-option intro">INTRO</div>
+        <div class="menu-option memories">MEM</div>
+        <div class="menu-option menu">MENU</div>
+      </div>
+    </div>
+
+  </div>
+
+<audio id="bgMusic" src="undertaleFallenDown.mp3" autoplay loop></audio>
+
+  <script src="script.js"></script>
+</body>
+</html>
