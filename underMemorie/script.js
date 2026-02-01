@@ -110,18 +110,19 @@ function showMemory(memName){
   img.addEventListener("click", () => renderMemoryPage());
 }
 
-function renderMemoryPage(){
+function renderMemoryPage() {
   memTypingTimeouts.forEach(t => clearTimeout(t));
   memTypingTimeouts = [];
+
   const start = currentMemoryPage * memoriesPerPage;
   const pageMemories = memories.slice(start, start + memoriesPerPage);
-  const [col1, col2] = [pageMemories.slice(0,3), pageMemories.slice(3,6)];
+  const [col1, col2] = [pageMemories.slice(0, 3), pageMemories.slice(3, 6)];
 
   dialogBox.innerHTML = "";
   dialogBox.style.padding = "20px";
 
   const blinkSound = new Audio('snd_blink.wav');
-  function blinkSans(callback){
+  function blinkSans(callback) {
     blinkSound.currentTime = 0;
     blinkSound.play();
     sansHead.src = "imgs/sans_blink1.png";
@@ -129,9 +130,9 @@ function renderMemoryPage(){
       sansHead.src = "imgs/sans_blink2.png";
       setTimeout(() => {
         sansHead.src = "imgs/sans_head.png";
-        if(callback) callback();
-      },50);
-    },50);
+        if (callback) callback();
+      }, 50);
+    }, 50);
   }
 
   const navDiv = document.createElement("div");
@@ -144,17 +145,23 @@ function renderMemoryPage(){
   btnPrev.textContent = "< Anterior";
   btnPrev.style.cursor = currentMemoryPage === 0 ? "not-allowed" : "pointer";
   btnPrev.style.marginRight = "10px";
-  btnPrev.addEventListener("click", () => {
-    if(currentMemoryPage > 0) blinkSans(() => {currentMemoryPage--; renderMemoryPage();});
-  });
 
   const btnNext = document.createElement("span");
   btnNext.className = "memory-button";
   btnNext.textContent = "Próximo >";
-  btnNext.style.cursor = (currentMemoryPage+1)*memoriesPerPage >= memories.length ? "not-allowed" : "pointer";
-  btnNext.addEventListener("click", () => {
-    if((currentMemoryPage+1)*memoriesPerPage < memories.length) blinkSans(() => {currentMemoryPage++; renderMemoryPage();});
-  });
+  btnNext.style.cursor = (currentMemoryPage + 1) * memoriesPerPage >= memories.length ? "not-allowed" : "pointer";
+
+  const prevAction = () => {
+    if (currentMemoryPage > 0) blinkSans(() => { currentMemoryPage--; renderMemoryPage(); });
+  };
+  const nextAction = () => {
+    if ((currentMemoryPage + 1) * memoriesPerPage < memories.length) blinkSans(() => { currentMemoryPage++; renderMemoryPage(); });
+  };
+
+  btnPrev.addEventListener("click", prevAction);
+  btnPrev.addEventListener("touchstart", (e) => { e.preventDefault(); prevAction(); });
+  btnNext.addEventListener("click", nextAction);
+  btnNext.addEventListener("touchstart", (e) => { e.preventDefault(); nextAction(); });
 
   navDiv.append(btnPrev, btnNext);
   dialogBox.appendChild(navDiv);
@@ -178,7 +185,7 @@ function renderMemoryPage(){
       col.appendChild(span);
     });
     return col;
-  }
+  };
 
   const leftCol = createCol(col1, "0 0 0 10px");
   const rightCol = createCol(col2, "0 10px 0 0");
@@ -187,18 +194,18 @@ function renderMemoryPage(){
 
   const spans = Array.from(leftCol.children).concat(Array.from(rightCol.children));
   let index = 0;
-  function typeNextSpan(){
-    if(index >= spans.length){
+  function typeNextSpan() {
+    if (index >= spans.length) {
       sansHead.src = "imgs/sans_head.png";
       return;
     }
     const span = spans[index];
     const fullText = `* ${span.dataset.mem}`;
     let i = 0;
-    function typeChar(){
-      if(i >= fullText.length){ index++; typeNextSpan(); return; }
+    function typeChar() {
+      if (i >= fullText.length) { index++; typeNextSpan(); return; }
       span.textContent += fullText[i];
-      if(fullText[i] !== " " && fullText[i] !== "\n"){
+      if (fullText[i] !== " " && fullText[i] !== "\n") {
         textSound.currentTime = 0;
         textSound.play();
       }
@@ -507,8 +514,8 @@ function typeClickableOption(text, onClick){
   typeChar();
 }
 
-function confirmReturnToMenu(){
-  if(typingTimeout) clearTimeout(typingTimeout);
+function confirmReturnToMenu() {
+  if (typingTimeout) clearTimeout(typingTimeout);
   typingTimeout = null;
   memTypingTimeouts.forEach(t => clearTimeout(t));
   memTypingTimeouts = [];
@@ -517,25 +524,54 @@ function confirmReturnToMenu(){
 
   sansHead.src = "imgs/sans_menu.png";
 
-  typeClickableOption("* Voltar para o menu.", () => {
-    selectSound.currentTime = 0;
-    selectSound.play();
+  const text = "* Voltar para o menu.";
 
-    menuLocked = true;
+  const span = document.createElement("span");
+  span.className = "memory-option";
+  span.style.cursor = "pointer";
+  span.style.display = "block";
+  span.style.marginTop = "10px";
+  span.textContent = "";
+  dialogBox.appendChild(span);
+  updateSansPosition();
 
-    const stats = document.getElementById("stats");
-    if(stats) stats.style.display = "none";
+  let i = 0;
+  function typeChar() {
+    if (i >= text.length) {
+      const doReturn = () => {
+        selectSound.currentTime = 0;
+        selectSound.play();
 
-    const menu = document.getElementById("menu");
-    if(menu) menu.style.display = "none";
+        menuLocked = true;
 
-    const hpBar = document.getElementById("hp-bar");
-    if(hpBar) hpBar.style.display = "none";
+        const stats = document.getElementById("stats");
+        if (stats) stats.style.display = "none";
 
-    startReturnBattle();
-  });
+        const menu = document.getElementById("menu");
+        if (menu) menu.style.display = "none";
+
+        const hpBar = document.getElementById("hp-bar");
+        if (hpBar) hpBar.style.display = "none";
+
+        startReturnBattle();
+      };
+
+      span.addEventListener("click", doReturn);
+      span.addEventListener("touchstart", (e) => { e.preventDefault(); doReturn(); });
+      return;
+    }
+
+    span.textContent += text[i];
+    if (text[i] !== " " && text[i] !== "\n") {
+      textSound.currentTime = 0;
+      textSound.play();
+    }
+    i++;
+    typingTimeout = setTimeout(typeChar, 50);
+  }
+
+  typeChar();
 }
-
 
 function selectOption(opt){
   if(typingTimeout) clearTimeout(typingTimeout);
@@ -579,19 +615,28 @@ function selectOption(opt){
   }
 }
 
-options.forEach((opt,i) => opt.addEventListener("click", () => {
-  if(menuLocked) return;
+options.forEach((opt, i) => {
+  const selectFn = () => {
+    if(menuLocked) return;
+    currentIndex = i;
+    updateSelection();
+    selectSound.currentTime = 0;
+    selectSound.play();
+    selectOption(opt);
+  };
 
-  currentIndex = i;
-  updateSelection();
-  selectSound.currentTime = 0;
-  selectSound.play();
-  selectOption(opt);
-}));
+  opt.addEventListener("click", selectFn);
+  opt.addEventListener("touchstart", selectFn);
+});
 
 let touchStartX = 0;
 document.addEventListener("touchstart", e => touchStartX = e.touches[0].clientX);
-document.addEventListener("touchend", e => handleMemorySwipe(e.changedTouches[0].clientX));
+
+document.addEventListener("touchend", e => {
+  const diffX = e.changedTouches[0].clientX - touchStartX;
+  if(Math.abs(diffX) < 30) return; // evita swipes curtos
+  handleMemorySwipe(e.changedTouches[0].clientX);
+});
 
 document.addEventListener("keydown", e => {
   if(screenState !== "menu") return;
