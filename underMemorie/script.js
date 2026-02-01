@@ -85,14 +85,10 @@ function showMemory(memName){
   typingTimeout = null;
   memTypingTimeouts.forEach(t => clearTimeout(t));
   memTypingTimeouts = [];
-
   textSound.pause();
   textSound.currentTime = 0;
   selectSound.currentTime = 0;
   selectSound.play();
-
-  dialogBox.innerHTML = "";
-  updateSansPosition();
 
   const img = document.createElement("img");
   img.src = `../headspace/imgs/${memName.toLowerCase().replace(/\s/g,"")}.png`;
@@ -107,16 +103,12 @@ function showMemory(memName){
   img.style.margin = "0 auto";
   img.style.cursor = "default";
 
+  dialogBox.innerHTML = "";
   dialogBox.appendChild(img);
-  img.onload = () => updateSansPosition();
-}
 
-container.querySelectorAll(".memory-option").forEach(el => {
-  el.replaceWith(el.cloneNode(true));
-});
-container.querySelectorAll(".memory-option").forEach(el => {
-  el.addEventListener("click", () => showMemory(el.dataset.mem));
-});
+  img.onload = () => updateSansPosition();
+
+}
 
 function renderMemoryPage() {
   memTypingTimeouts.forEach(t => clearTimeout(t));
@@ -656,15 +648,6 @@ options.forEach((opt, i) => {
 
   opt.addEventListener("click", selectFn);
   opt.addEventListener("touchstart", selectFn);
-});
-
-let touchStartX = 0;
-document.addEventListener("touchstart", e => touchStartX = e.touches[0].clientX);
-
-document.addEventListener("touchend", e => {
-  const diffX = e.changedTouches[0].clientX - touchStartX;
-  if(Math.abs(diffX) < 30) return;
-  handleMemorySwipe(e.changedTouches[0].clientX);
 });
 
 document.addEventListener("keydown", e => {
