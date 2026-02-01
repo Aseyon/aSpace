@@ -101,13 +101,18 @@ function showMemory(memName){
   img.style.objectFit = "contain";
   img.style.display = "block";
   img.style.margin = "0 auto";
-  img.style.cursor = "default";
+  img.style.cursor = "pointer";
 
   dialogBox.innerHTML = "";
   dialogBox.appendChild(img);
 
   img.onload = () => updateSansPosition();
 
+  img.addEventListener("click", renderMemoryPage);
+  img.addEventListener("touchstart", (e) => { 
+    e.preventDefault(); 
+    renderMemoryPage(); 
+  });
 }
 
 function renderMemoryPage() {
