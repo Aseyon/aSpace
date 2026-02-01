@@ -647,7 +647,10 @@ options.forEach((opt, i) => {
   };
 
   opt.addEventListener("click", selectFn);
-  opt.addEventListener("touchstart", selectFn);
+opt.addEventListener("touchstart", (e) => {
+  e.preventDefault(); // previne scroll e clique duplo
+  selectFn();
+});
 });
 
 document.addEventListener("keydown", e => {
