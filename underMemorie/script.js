@@ -371,6 +371,7 @@ function animateDragonOnce(dragon, onFinish){
     if(frame > 6){ 
       clearInterval(interval);
       dragon.dataset.animDone = "true";
+
       if(onFinish && !dragon.dataset.fired) { 
         dragon.dataset.fired = "true";
         onFinish(dragon);
@@ -442,6 +443,8 @@ function removeDragonWithBeam(dragon){
   }, 100);
 }
 
+let dragonLaserSoundPlayed = false;
+
 function fireBeamFromDragon(dragon){
   const screen = document.getElementById("battle-screen");
 
@@ -471,17 +474,20 @@ function fireBeamFromDragon(dragon){
     beam.style.transformOrigin = "right center";
   }
 
-  const laserSound = new Audio("mus_sfx_rainbowbeam_1.wav");
-  laserSound.play();
+  if(!dragonLaserSoundPlayed){
+    const laserSound = new Audio("mus_sfx_rainbowbeam_1.wav");
+    laserSound.play();
+    dragonLaserSoundPlayed = true;
+  }
 
   let width = 0;
   const speed = 20;
   function animateLaser(){
     if(!dragon.parentNode){ beam.remove(); return; }
-    if(width<targetWidth){
-      width+=speed;
-      if(width>targetWidth) width=targetWidth;
-      beam.style.width = width+"px";
+    if(width < targetWidth){
+      width += speed;
+      if(width > targetWidth) width = targetWidth;
+      beam.style.width = width + "px";
       requestAnimationFrame(animateLaser);
     }
   }
@@ -501,54 +507,60 @@ function explodeHeart(heart, callback) {
   heart.dataset.exploded = "true";
 
   new Audio("snd_break1_c.wav").play();
+
   heart.src = "imgs/broken_heart.png";
 
   const rect = heart.getBoundingClientRect();
 
-  const debrisImgs = [
-    "imgs/heart_debris1.png",
-    "imgs/heart_debris2.png",
-    "imgs/heart_debris3.png",
-    "imgs/heart_debris4.png"
-  ];
-  const debrisElements = [];
-
-  heart.remove();
-
-  new Audio("snd_break2_c.wav").play();
-
-  debrisImgs.forEach(src => {
-    const d = document.createElement("img");
-    d.src = src;
-    d.style.position = "absolute";
-    d.style.left = rect.left + "px";
-    d.style.top = rect.top + "px";
-    d.style.width = rect.width / 2 + "px";
-    d.style.height = rect.height / 2 + "px";
-    d.style.pointerEvents = "none";
-    d.style.transition = "transform 2.5s ease-out, opacity 2.5s ease-out";
-    document.body.appendChild(d);
-    debrisElements.push(d);
-  });
-
-  const directions = [
-    {x: -30, y: -30},
-    {x: 30, y: -30},
-    {x: -30, y: 30},
-    {x: 30, y: 30}
-  ];
-
-  debrisElements.forEach((d, i) => {
-    requestAnimationFrame(() => {
-      d.style.transform = `translate(${directions[i].x}px, ${directions[i].y}px) rotate(${Math.random() * 360}deg)`;
-      d.style.opacity = 0;
-    });
-  });
+  const snd2 = new Audio("snd_break2_c.wav");
 
   setTimeout(() => {
-    debrisElements.forEach(d => d.remove());
-    if (callback) callback();
-  }, 1200);
+    snd2.play();
+
+    heart.remove();
+
+    const debrisImgs = [
+      "imgs/heart_debris1.png",
+      "imgs/heart_debris2.png",
+      "imgs/heart_debris3.png",
+      "imgs/heart_debris4.png"
+    ];
+    const debrisElements = [];
+
+    debrisImgs.forEach(src => {
+      const d = document.createElement("img");
+      d.src = src;
+      d.style.position = "absolute";
+      d.style.left = rect.left + "px";
+      d.style.top = rect.top + "px";
+      d.style.width = rect.width / 2 + "px";
+      d.style.height = rect.height / 2 + "px";
+      d.style.pointerEvents = "none";
+      d.style.transition = "transform 1.5s ease-out, opacity 1.5s ease-out";
+      document.body.appendChild(d);
+      debrisElements.push(d);
+    });
+
+    const directions = [
+      {x: -30, y: -30},
+      {x: 30, y: -30},
+      {x: -30, y: 30},
+      {x: 30, y: 30}
+    ];
+
+    debrisElements.forEach((d, i) => {
+      requestAnimationFrame(() => {
+        d.style.transform = `translate(${directions[i].x}px, ${directions[i].y}px) rotate(${Math.random() * 360}deg)`;
+        d.style.opacity = 0;
+      });
+    });
+
+    setTimeout(() => {
+      debrisElements.forEach(d => d.remove());
+      if (callback) callback();
+    }, 2000);
+
+  }, 1000);
 }
 
 function typeClickableOption(text, onClick){
