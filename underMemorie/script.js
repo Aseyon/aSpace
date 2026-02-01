@@ -101,13 +101,13 @@ function showMemory(memName){
   img.style.objectFit = "contain";
   img.style.display = "block";
   img.style.margin = "0 auto";
-  img.style.cursor = "pointer";
+  img.style.cursor = "default";
 
   dialogBox.innerHTML = "";
   dialogBox.appendChild(img);
 
   img.onload = () => updateSansPosition();
-  img.addEventListener("click", () => renderMemoryPage());
+
 }
 
 function renderMemoryPage() {
@@ -536,28 +536,11 @@ function confirmReturnToMenu() {
   updateSansPosition();
 
   let i = 0;
+  let typingDone = false; // ✅ flag para saber se a digitação terminou
+
   function typeChar() {
     if (i >= text.length) {
-      const doReturn = () => {
-        selectSound.currentTime = 0;
-        selectSound.play();
-
-        menuLocked = true;
-
-        const stats = document.getElementById("stats");
-        if (stats) stats.style.display = "none";
-
-        const menu = document.getElementById("menu");
-        if (menu) menu.style.display = "none";
-
-        const hpBar = document.getElementById("hp-bar");
-        if (hpBar) hpBar.style.display = "none";
-
-        startReturnBattle();
-      };
-
-      span.addEventListener("click", doReturn);
-      span.addEventListener("touchstart", (e) => { e.preventDefault(); doReturn(); });
+      typingDone = true; // digitação terminou
       return;
     }
 
@@ -571,6 +554,45 @@ function confirmReturnToMenu() {
   }
 
   typeChar();
+
+  // só ativa o clique depois que a digitação termina
+  span.addEventListener("click", () => {
+    if (!typingDone) return; // ignora cliques enquanto digita
+    selectSound.currentTime = 0;
+    selectSound.play();
+
+    menuLocked = true;
+
+    const stats = document.getElementById("stats");
+    if (stats) stats.style.display = "none";
+
+    const menu = document.getElementById("menu");
+    if (menu) menu.style.display = "none";
+
+    const hpBar = document.getElementById("hp-bar");
+    if (hpBar) hpBar.style.display = "none";
+
+    startReturnBattle();
+  });
+
+  span.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    if (!typingDone) return; // ignora toques enquanto digita
+    selectSound.currentTime = 0;
+    selectSound.play();
+    menuLocked = true;
+
+    const stats = document.getElementById("stats");
+    if (stats) stats.style.display = "none";
+
+    const menu = document.getElementById("menu");
+    if (menu) menu.style.display = "none";
+
+    const hpBar = document.getElementById("hp-bar");
+    if (hpBar) hpBar.style.display = "none";
+
+    startReturnBattle();
+  });
 }
 
 function selectOption(opt){
