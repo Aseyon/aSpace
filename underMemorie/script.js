@@ -85,10 +85,14 @@ function showMemory(memName){
   typingTimeout = null;
   memTypingTimeouts.forEach(t => clearTimeout(t));
   memTypingTimeouts = [];
+
   textSound.pause();
   textSound.currentTime = 0;
   selectSound.currentTime = 0;
   selectSound.play();
+
+  dialogBox.innerHTML = "";
+  updateSansPosition();
 
   const img = document.createElement("img");
   img.src = `../headspace/imgs/${memName.toLowerCase().replace(/\s/g,"")}.png`;
@@ -103,12 +107,16 @@ function showMemory(memName){
   img.style.margin = "0 auto";
   img.style.cursor = "default";
 
-  dialogBox.innerHTML = "";
   dialogBox.appendChild(img);
-
   img.onload = () => updateSansPosition();
-
 }
+
+container.querySelectorAll(".memory-option").forEach(el => {
+  el.replaceWith(el.cloneNode(true));
+});
+container.querySelectorAll(".memory-option").forEach(el => {
+  el.addEventListener("click", () => showMemory(el.dataset.mem));
+});
 
 function renderMemoryPage() {
   memTypingTimeouts.forEach(t => clearTimeout(t));
@@ -536,11 +544,11 @@ function confirmReturnToMenu() {
   updateSansPosition();
 
   let i = 0;
-  let typingDone = false; // ✅ flag para saber se a digitação terminou
+  let typingDone = false;
 
   function typeChar() {
     if (i >= text.length) {
-      typingDone = true; // digitação terminou
+      typingDone = true;
       return;
     }
 
@@ -555,9 +563,8 @@ function confirmReturnToMenu() {
 
   typeChar();
 
-  // só ativa o clique depois que a digitação termina
   span.addEventListener("click", () => {
-    if (!typingDone) return; // ignora cliques enquanto digita
+    if (!typingDone) return;
     selectSound.currentTime = 0;
     selectSound.play();
 
@@ -577,7 +584,7 @@ function confirmReturnToMenu() {
 
   span.addEventListener("touchstart", (e) => {
     e.preventDefault();
-    if (!typingDone) return; // ignora toques enquanto digita
+    if (!typingDone) return;
     selectSound.currentTime = 0;
     selectSound.play();
     menuLocked = true;
@@ -656,7 +663,7 @@ document.addEventListener("touchstart", e => touchStartX = e.touches[0].clientX)
 
 document.addEventListener("touchend", e => {
   const diffX = e.changedTouches[0].clientX - touchStartX;
-  if(Math.abs(diffX) < 30) return; // evita swipes curtos
+  if(Math.abs(diffX) < 30) return;
   handleMemorySwipe(e.changedTouches[0].clientX);
 });
 
