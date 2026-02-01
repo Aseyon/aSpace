@@ -67,7 +67,7 @@ function updateSelection(){
 options.forEach(opt => opt.setAttribute("data-text", opt.textContent));
 updateSelection();
 
-const memories = ["bk","anime","princess","quack","yt","wit","back","rblx","truth", "tranzit", "stre", "rrpo", "rof2"];
+const memories = ["bk","anime","princess","quack","yt","wit","back","rblx","truth", "tranzit", "dntstarve", "rrpo", "rof2"];
 let currentMemoryPage = 0;
 const memoriesPerPage = 6;
 let memTypingTimeouts = [];
@@ -80,8 +80,24 @@ function handleMemorySwipe(endX){
   renderMemoryPage();
 }
 
-function showMemory(memName){
-  if(typingTimeout) clearTimeout(typingTimeout);
+const memoryDescriptions = {
+  bk: "Backrooms, até hoje me lembro da viagem que foi isso.",
+  anime: "Você me prometeu que voltaria...",
+  princess: "Até nos momentos mais obscuros...",
+  quack: "Almas gritando em agonia à prisão eterna de um corpo que não consegue mais pedir por ajuda.",
+  yt: "Claramente, os melhores influencers da geração.",
+  wit: "Antes da tragédia.",
+  back: "Às vezes o desconhecido também pode ser um descanso.",
+  rblx: "Uma época que eu nunca vou me esquecer.. Eu gostaria de ter tido mais memórias desse tempo...",
+  truth: "Não que você precise saber, mas na verdade eu que te matei.",
+  tranzit: "Um buraco que nos sugava espença, sonhos e vida.",
+  dntstarve: "Horas gastas para concretizar seus ossos.",
+  rrpo: "Sem mais fuga, agora são eles que fogem.",
+  rof2: "Jogo do capeta."
+};
+
+function showMemory(memName) {
+  if (typingTimeout) clearTimeout(typingTimeout);
   typingTimeout = null;
   memTypingTimeouts.forEach(t => clearTimeout(t));
   memTypingTimeouts = [];
@@ -89,6 +105,9 @@ function showMemory(memName){
   textSound.currentTime = 0;
   selectSound.currentTime = 0;
   selectSound.play();
+
+  const oldDesc = document.getElementById("memory-description");
+  if (oldDesc) oldDesc.remove();
 
   const img = document.createElement("img");
   img.src = `../headspace/imgs/${memName.toLowerCase().replace(/\s/g,"")}.png`;
@@ -98,21 +117,61 @@ function showMemory(memName){
   };
   img.style.maxWidth = "100%";
   img.style.maxHeight = "200px";
+  img.style.width = "auto";
+  img.style.height = "auto";
   img.style.objectFit = "contain";
   img.style.display = "block";
-  img.style.margin = "0 auto";
+  img.style.margin = "0 auto 10px auto";
   img.style.cursor = "pointer";
 
   dialogBox.innerHTML = "";
   dialogBox.appendChild(img);
 
-  img.onload = () => updateSansPosition();
+  img.onload = () => {
+    requestAnimationFrame(() => {
+      updateSansPosition();
+
+      const desc = document.createElement("div");
+      desc.id = "memory-description";
+      dialogBox.appendChild(desc);
+
+      const text = memoryDescriptions[memName];
+      typeTextBelowImage(text, desc);
+    });
+  };
 
   img.addEventListener("click", renderMemoryPage);
-  img.addEventListener("touchstart", (e) => { 
+  img.addEventListener("touchstart", e => { 
     e.preventDefault(); 
     renderMemoryPage(); 
   });
+}
+
+function typeTextBelowImage(text, element, callback){
+  if (typingTimeout) clearTimeout(typingTimeout);
+  typingTimeout = null;
+  element.innerHTML = "";
+  let i = 0;
+
+  function typeNextChar() {
+    if (i >= text.length) {
+      typingTimeout = null;
+      if (callback) callback();
+      return;
+    }
+    const char = text[i];
+    element.innerHTML += char === "\n" ? "<br>" : char;
+    updateSansPosition();
+
+    if (char !== " " && char !== "\n") {
+      textSound.currentTime = 0;
+      textSound.play();
+    }
+    i++;
+    typingTimeout = setTimeout(typeNextChar, 50);
+  }
+
+  typeNextChar();
 }
 
 function renderMemoryPage() {
@@ -625,7 +684,7 @@ function selectOption(opt){
     });
 
   } else if(opt.classList.contains("memories")){
-    sansHead.src = "imgs/sans_sig.png";
+    sansHead.src = "imgs/sans_head.png";
     currentMemoryPage = 0;
     renderMemoryPage();
 
@@ -653,7 +712,7 @@ options.forEach((opt, i) => {
 
   opt.addEventListener("click", selectFn);
 opt.addEventListener("touchstart", (e) => {
-  e.preventDefault(); // previne scroll e clique duplo
+  e.preventDefault();
   selectFn();
 });
 });
