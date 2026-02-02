@@ -327,6 +327,7 @@ function startReturnBattle() {
 
         heart.style.width = HEART_W + "px";
         heart.style.height = HEART_H + "px";
+        heart.style.position = "absolute";
 
         const boxW = dialogBox.clientWidth;
         const boxH = dialogBox.clientHeight;
@@ -348,10 +349,47 @@ function startReturnBattle() {
             clamp();
             heart.style.left = x + "px";
             heart.style.top = y + "px";
+
             requestAnimationFrame(loop);
         }
 
         loop();
+
+        let touchId = null;
+        let lastTouchX = 0;
+        let lastTouchY = 0;
+
+        dialogBox.addEventListener("touchstart", (e) => {
+            const touch = e.changedTouches[0];
+            touchId = touch.identifier;
+            lastTouchX = touch.clientX;
+            lastTouchY = touch.clientY;
+            e.preventDefault();
+        }, { passive: false });
+
+        dialogBox.addEventListener("touchmove", (e) => {
+            for (let t of e.changedTouches) {
+                if (t.identifier === touchId) {
+                    const dx = t.clientX - lastTouchX;
+                    const dy = t.clientY - lastTouchY;
+
+                    x += dx;
+                    y += dy;
+
+                    lastTouchX = t.clientX;
+                    lastTouchY = t.clientY;
+
+                    clamp();
+                    heart.style.left = x + "px";
+                    heart.style.top = y + "px";
+                    e.preventDefault();
+                }
+            }
+        }, { passive: false });
+
+        dialogBox.addEventListener("touchend", () => {
+            touchId = null;
+        });
 
         if (!dragonAttackStarted) {
             dragonAttackStarted = true;
@@ -360,7 +398,6 @@ function startReturnBattle() {
     }
 
     heart.onload = onHeartReady;
-
     heart.src = "imgs/heart.png";
     dialogBox.appendChild(heart);
 
