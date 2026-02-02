@@ -75,6 +75,17 @@ const mp4Icons = [
         glitchTimer: 0
     },
     {
+        x: 2000,
+        y: 200,
+        video: "vds/mineDino.mp4",
+        width: 48,
+        height: 48,
+        activated: false,
+        glitchActive: false,
+        glitchFrame: 0,
+        glitchTimer: 0
+    },
+    {
         x: 500,
         y: 1000,
         video: "vds/repo.mp4",
