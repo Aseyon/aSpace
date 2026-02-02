@@ -620,18 +620,46 @@ function explodeHeart(heart, callback) {
     if (heart.dataset.exploded) return;
     heart.dataset.exploded = "true";
 
-    new Audio("snd_break1_c.wav").play();
+    const container = heart.parentElement;
 
-    heart.src = "imgs/broken_heart.png";
+    const style = getComputedStyle(heart);
+    const matrix = new DOMMatrixReadOnly(style.transform);
+    const transformX = matrix.m41;
+    const transformY = matrix.m42;
 
     const rect = heart.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
 
-    const snd2 = new Audio("snd_break2_c.wav");
+    const offsetX = rect.left - containerRect.left + transformX;
+    const offsetY = rect.top - containerRect.top + transformY;
+
+    heart.remove();
+
+    const brokenHeart = document.createElement("img");
+    brokenHeart.src = "imgs/broken_heart.png";
+    brokenHeart.style.position = "absolute";
+    brokenHeart.style.left = offsetX + "px";
+    brokenHeart.style.top = offsetY + "px";
+
+    const originalRatio = 1;
+
+    if (rect.width >= rect.height) {
+        brokenHeart.style.width = rect.width + "px";
+        brokenHeart.style.height = rect.width / originalRatio + "px";
+    } else {
+        brokenHeart.style.height = rect.height + "px";
+        brokenHeart.style.width = rect.height * originalRatio + "px";
+    }
+
+    brokenHeart.style.pointerEvents = "none";
+    container.appendChild(brokenHeart);
+
+    new Audio("snd_break1_c.wav").play();
 
     setTimeout(() => {
-        snd2.play();
+        brokenHeart.remove();
 
-        heart.remove();
+        new Audio("snd_break2_c.wav").play();
 
         const debrisImgs = [
             "imgs/heart_debris1.png",
@@ -645,32 +673,21 @@ function explodeHeart(heart, callback) {
             const d = document.createElement("img");
             d.src = src;
             d.style.position = "absolute";
-            d.style.left = rect.left + "px";
-            d.style.top = rect.top + "px";
+            d.style.left = offsetX + "px";
+            d.style.top = offsetY + "px";
             d.style.width = rect.width / 2 + "px";
             d.style.height = rect.height / 2 + "px";
             d.style.pointerEvents = "none";
-            d.style.transition = "transform 1.5s ease-out, opacity 1.5s ease-out";
-            document.body.appendChild(d);
+            d.style.transition = "transform 2s ease-out, opacity 2s ease-out";
+            container.appendChild(d);
             debrisElements.push(d);
         });
 
-        const directions = [{
-                x: -30,
-                y: -30
-            },
-            {
-                x: 30,
-                y: -30
-            },
-            {
-                x: -30,
-                y: 30
-            },
-            {
-                x: 30,
-                y: 30
-            }
+        const directions = [
+            { x: -50, y: -50 },
+            { x: 50, y: -50 },
+            { x: -50, y: 50 },
+            { x: 50, y: 50 }
         ];
 
         debrisElements.forEach((d, i) => {
