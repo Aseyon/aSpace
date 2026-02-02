@@ -313,16 +313,15 @@ function startReturnBattle() {
     dialogBox.classList.add("dialog-battle");
 
     heart = document.createElement("img");
-    heart.src = "imgs/heart.png";
     heart.className = "battle-heart";
-    dialogBox.appendChild(heart);
 
     const speed = 2.5;
     const keys = {};
 
-    heart.onload = () => {
+    function onHeartReady() {
         const VISUAL_W = 16;
         const ratio = heart.naturalHeight / heart.naturalWidth;
+
         const HEART_W = VISUAL_W;
         const HEART_H = VISUAL_W * ratio;
 
@@ -358,7 +357,16 @@ function startReturnBattle() {
             dragonAttackStarted = true;
             setTimeout(startDragonAttack, 600);
         }
-    };
+    }
+
+    heart.onload = onHeartReady;
+
+    heart.src = "imgs/heart.png";
+    dialogBox.appendChild(heart);
+
+    if (heart.complete) {
+        onHeartReady();
+    }
 
     function keyDown(e) {
         if (e.key.startsWith("Arrow")) {
