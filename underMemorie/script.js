@@ -427,14 +427,12 @@ let dragonsFinished = 0;
 let totalDragons = 0;
 
 function startDragonAttack() {
-
     dragonsFinished = 0;
     totalDragons = 2;
 
     const screen = document.getElementById("battle-screen");
     const boxRect = dialogBox.getBoundingClientRect();
     const screenRect = screen.getBoundingClientRect();
-    const dragons = [];
 
     function spawnDragon(side) {
         const d = document.createElement("img");
@@ -444,29 +442,35 @@ function startDragonAttack() {
         d.style.height = "96px";
         d.style.opacity = 0;
 
-        if (side === "left") d.style.left = boxRect.left - screenRect.left - 96 - 5 + "px";
-        else d.style.left = boxRect.right - screenRect.left + 5 + "px";
+        if (side === "left") {
+            d.style.left = boxRect.left - screenRect.left - 96 - 5 + "px";
+        } else {
+            d.style.left = boxRect.right - screenRect.left + 5 + "px";
+        }
 
         d.style.top = "-120px";
-
         d.style.transition = "top 1.6s ease-out, opacity 1.6s ease-out";
 
         screen.appendChild(d);
-        dragons.push(d);
 
-        const audio = new Audio("snd_spearappear.wav");
-        audio.play();
+        new Audio("snd_spearappear.wav").play();
 
         const boxTop = boxRect.top - screenRect.top;
         const finalTop = boxTop + boxRect.height / 2 - 96 / 2;
+
+        d.getBoundingClientRect();
+
         requestAnimationFrame(() => {
             d.style.top = finalTop + "px";
             d.style.opacity = 1;
         });
 
+        let entered = false;
+
         const onEnterEnd = (e) => {
+            if (entered) return;
             if (e.propertyName !== "top") return;
-            d.removeEventListener("transitionend", onEnterEnd);
+            entered = true;
 
             setTimeout(() => {
                 animateDragonOnce(d, () => fireBeamFromDragon(d));
@@ -475,9 +479,15 @@ function startDragonAttack() {
 
         d.addEventListener("transitionend", onEnterEnd);
 
+        setTimeout(() => {
+            if (!entered) {
+                entered = true;
+                animateDragonOnce(d, () => fireBeamFromDragon(d));
+            }
+        }, 1800);
+
         return d;
     }
-
 
     spawnDragon("left");
     spawnDragon("right");
@@ -568,7 +578,6 @@ function fireBeamFromDragon(dragon) {
 
     animateLaser();
 }
-
 
 function explodeHeart(heart, callback) {
     if (heart.dataset.exploded) return;
