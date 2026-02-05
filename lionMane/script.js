@@ -222,9 +222,10 @@ iconImage.onload = () => {
     ICON_HEIGHT = iconImage.naturalHeight / iconImage.naturalWidth * ICON_WIDTH;
     createObject(50, 50, '../darkroom/vds/contentwarning1.mp4', ICON_WIDTH, ICON_HEIGHT);
     createObject(200, 300, '../darkroom/vds/blackops2_1.mp4', ICON_WIDTH, ICON_HEIGHT);
+    createObject(480, 100, '../darkroom/vds/lockedsouls.mp4', ICON_WIDTH, ICON_HEIGHT);
     createObject(800, 200, '../darkroom/vds/minePark1.mp4', ICON_WIDTH, ICON_HEIGHT);
     createObject(1000, 330, '../darkroom/vds/mineDino.mp4', ICON_WIDTH, ICON_HEIGHT);
-    createObject(500, 100, '../darkroom/vds/contentwarning2.mp4', ICON_WIDTH, ICON_HEIGHT);
+    createObject(400, 250, '../darkroom/vds/contentwarning2.mp4', ICON_WIDTH, ICON_HEIGHT);
     BG_NATURAL_HEIGHT = bgImg.naturalHeight;
 
     objectsReady = true; 

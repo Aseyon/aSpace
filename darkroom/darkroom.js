@@ -97,7 +97,18 @@ const mp4Icons = [
         glitchTimer: 0
     },
     {
-        x: 1200,
+        x: 1600,
+        y: 800,
+        video: "vds/lockedsouls.mp4",
+        width: 48,
+        height: 48,
+        activated: false,
+        glitchActive: false,
+        glitchFrame: 0,
+        glitchTimer: 0
+    },
+    {
+        x: 1800,
         y: 300,
         video: "vds/contentwarning2.mp4",
         width: 48,
