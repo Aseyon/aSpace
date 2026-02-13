@@ -53,8 +53,8 @@ let stepIndex = 0;
 
 const mp4Icons = [
     {
-        x: 300,
-        y: 200,
+        x: 150,
+        y: 150,
         video: "vds/darkhours.mp4",
         width: 48,
         height: 48,
@@ -64,8 +64,8 @@ const mp4Icons = [
         glitchTimer: 0
     },
     {
-        x: 800,
-        y: 600,
+        x: 600,
+        y: 120,
         video: "vds/contentwarning1.mp4",
         width: 48,
         height: 48,
@@ -75,7 +75,7 @@ const mp4Icons = [
         glitchTimer: 0
     },
     {
-        x: 2000,
+        x: 1100,
         y: 200,
         video: "vds/mineDino.mp4",
         width: 48,
@@ -86,8 +86,8 @@ const mp4Icons = [
         glitchTimer: 0
     },
     {
-        x: 500,
-        y: 1000,
+        x: 1700,
+        y: 180,
         video: "vds/repo.mp4",
         width: 48,
         height: 48,
@@ -97,8 +97,8 @@ const mp4Icons = [
         glitchTimer: 0
     },
     {
-        x: 1600,
-        y: 800,
+        x: 300,
+        y: 500,
         video: "vds/lockedsouls.mp4",
         width: 48,
         height: 48,
@@ -108,8 +108,8 @@ const mp4Icons = [
         glitchTimer: 0
     },
     {
-        x: 1800,
-        y: 300,
+        x: 900,
+        y: 550,
         video: "vds/contentwarning2.mp4",
         width: 48,
         height: 48,
@@ -119,7 +119,7 @@ const mp4Icons = [
         glitchTimer: 0
     },
     {
-        x: 1900,
+        x: 1500,
         y: 600,
         video: "vds/minePark1.mp4",
         width: 48,
@@ -130,9 +130,31 @@ const mp4Icons = [
         glitchTimer: 0
     },
     {
-        x: 150,
-        y: 900,
+        x: 200,
+        y: 850,
         video: "vds/blackops2_1.mp4",
+        width: 48,
+        height: 48,
+        activated: false,
+        glitchActive: false,
+        glitchFrame: 0,
+        glitchTimer: 0
+    },
+    {
+        x: 1000,
+        y: 900,
+        video: "vds/massacre_escolar.mp4",
+        width: 48,
+        height: 48,
+        activated: false,
+        glitchActive: false,
+        glitchFrame: 0,
+        glitchTimer: 0
+    },
+    {
+        x: 1800,
+        y: 850,
+        video: "vds/fnaf.mp4",
         width: 48,
         height: 48,
         activated: false,
@@ -141,6 +163,7 @@ const mp4Icons = [
         glitchTimer: 0
     }
 ];
+
 
 const mp4Image = new Image();
 mp4Image.src = "imgs/mp4icon.png";

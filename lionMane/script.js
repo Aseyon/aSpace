@@ -109,9 +109,7 @@ function createObject(x, y, videoSrc, width, height) {
 function getBgOffsetNormalized() {
     const style = window.getComputedStyle(bgImg);
     const matrix = new DOMMatrixReadOnly(style.transform);
-    const translateX = matrix.m41 || 0;
-    const scaleX = bgImg.clientWidth / BG_NATURAL_WIDTH;
-    return translateX / scaleX;
+    return matrix.m41 || 0;
 }
 
 function drawObjects() {
@@ -220,15 +218,28 @@ let objectsReady = false;
 
 iconImage.onload = () => {
     ICON_HEIGHT = iconImage.naturalHeight / iconImage.naturalWidth * ICON_WIDTH;
-    createObject(50, 50, '../darkroom/vds/contentwarning1.mp4', ICON_WIDTH, ICON_HEIGHT);
-    createObject(200, 300, '../darkroom/vds/blackops2_1.mp4', ICON_WIDTH, ICON_HEIGHT);
-    createObject(480, 100, '../darkroom/vds/lockedsouls.mp4', ICON_WIDTH, ICON_HEIGHT);
-    createObject(800, 200, '../darkroom/vds/minePark1.mp4', ICON_WIDTH, ICON_HEIGHT);
-    createObject(1000, 330, '../darkroom/vds/mineDino.mp4', ICON_WIDTH, ICON_HEIGHT);
-    createObject(400, 250, '../darkroom/vds/contentwarning2.mp4', ICON_WIDTH, ICON_HEIGHT);
-    BG_NATURAL_HEIGHT = bgImg.naturalHeight;
 
-    objectsReady = true; 
+    const bgWidth = bgImg.getBoundingClientRect().width;
+
+    const travelDistance = window.innerWidth * 1.2;
+
+    const usableWidth = window.innerWidth + travelDistance;
+    const safeWidth = usableWidth - ICON_WIDTH;
+
+    function px(percent) {
+        return safeWidth * percent;
+    }
+
+    createObject(px(0.05), 120, '../darkroom/vds/contentwarning1.mp4', ICON_WIDTH, ICON_HEIGHT);
+    createObject(px(0.18), 400, '../darkroom/vds/blackops2_1.mp4', ICON_WIDTH, ICON_HEIGHT);
+    createObject(px(0.32), 150, '../darkroom/vds/lockedsouls.mp4', ICON_WIDTH, ICON_HEIGHT);
+    createObject(px(0.48), 280, '../darkroom/vds/minePark1.mp4', ICON_WIDTH, ICON_HEIGHT);
+    createObject(px(0.62), 200, '../darkroom/vds/mineDino.mp4', ICON_WIDTH, ICON_HEIGHT);
+    createObject(px(0.75), 10, '../darkroom/vds/contentwarning2.mp4', ICON_WIDTH, ICON_HEIGHT);
+    createObject(px(0.88), 420, '../darkroom/vds/massacre_escolar.mp4', ICON_WIDTH, ICON_HEIGHT);
+    createObject(px(0.95), 100, '../darkroom/vds/fnaf.mp4', ICON_WIDTH, ICON_HEIGHT);
+
+    objectsReady = true;
 };
 
 function gameLoop() {

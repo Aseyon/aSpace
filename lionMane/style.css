@@ -30,8 +30,8 @@ body {
   left: 0;
   height: 100%;
   width: auto;
-  min-width: 220vw;
-  animation: bgPan 18s ease-in-out infinite alternate;
+  min-width: 400vw;
+  animation: bgPan 10s ease-in-out infinite alternate;
   will-change: transform;
 }
 

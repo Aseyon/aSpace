@@ -365,7 +365,9 @@ function startReturnBattle() {
             lastTouchX = touch.clientX;
             lastTouchY = touch.clientY;
             e.preventDefault();
-        }, { passive: false });
+        }, {
+            passive: false
+        });
 
         dialogBox.addEventListener("touchmove", (e) => {
             for (let t of e.changedTouches) {
@@ -385,7 +387,9 @@ function startReturnBattle() {
                     e.preventDefault();
                 }
             }
-        }, { passive: false });
+        }, {
+            passive: false
+        });
 
         dialogBox.addEventListener("touchend", () => {
             touchId = null;
@@ -393,7 +397,11 @@ function startReturnBattle() {
 
         if (!dragonAttackStarted) {
             dragonAttackStarted = true;
-            setTimeout(startDragonAttack, 600);
+            setTimeout(() => {
+                preloadDragonFrames(() => {
+                    startDragonAttack();
+                });
+            }, 600);
         }
     }
 
@@ -440,24 +448,39 @@ function animateDragonReverse(dragon, onFinish) {
     }, FRAME_TIME);
 }
 
+const dragonFrames = [];
+
+function preloadDragonFrames(callback) {
+    let loaded = 0;
+    const total = 6;
+
+    for (let i = 1; i <= total; i++) {
+        const img = new Image();
+        img.src = `imgs/dragonskull${i}.png`;
+        img.onload = () => {
+            loaded++;
+            if (loaded === total && callback) callback();
+        };
+        dragonFrames.push(img);
+    }
+}
+
 function animateDragonOnce(dragon, onFinish) {
-    if (dragon.dataset.animStarted) return;
-    dragon.dataset.animStarted = "true";
+    if (!dragonFrames.length) return; // proteção
 
-    let frame = 1;
-    const interval = setInterval(() => {
-        dragon.src = `imgs/dragonskull${frame}.png`;
-        frame++;
-        if (frame > 6) {
-            clearInterval(interval);
-            dragon.dataset.animDone = "true";
+    let frame = 0;
 
-            if (onFinish && !dragon.dataset.fired) {
-                dragon.dataset.fired = "true";
-                onFinish(dragon);
-            }
+    function nextFrame() {
+        if (frame < dragonFrames.length) {
+            dragon.src = dragonFrames[frame].src;
+            frame++;
+            setTimeout(nextFrame, 60);
+        } else {
+            if (onFinish) onFinish(dragon);
         }
-    }, 60);
+    }
+
+    nextFrame();
 }
 
 let dragonsFinished = 0;
@@ -622,44 +645,31 @@ function explodeHeart(heart, callback) {
 
     const container = heart.parentElement;
 
-    const style = getComputedStyle(heart);
-    const matrix = new DOMMatrixReadOnly(style.transform);
-    const transformX = matrix.m41;
-    const transformY = matrix.m42;
-
     const rect = heart.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
 
-    const offsetX = rect.left - containerRect.left + transformX;
-    const offsetY = rect.top - containerRect.top + transformY;
-
-    heart.remove();
+    const offsetX = rect.left - containerRect.left;
+    const offsetY = rect.top - containerRect.top;
 
     const brokenHeart = document.createElement("img");
     brokenHeart.src = "imgs/broken_heart.png";
     brokenHeart.style.position = "absolute";
     brokenHeart.style.left = offsetX + "px";
     brokenHeart.style.top = offsetY + "px";
-
-    const originalRatio = 1;
-
-    if (rect.width >= rect.height) {
-        brokenHeart.style.width = rect.width + "px";
-        brokenHeart.style.height = rect.width / originalRatio + "px";
-    } else {
-        brokenHeart.style.height = rect.height + "px";
-        brokenHeart.style.width = rect.height * originalRatio + "px";
-    }
-
+    brokenHeart.style.width = rect.width + "px";
+    brokenHeart.style.height = rect.height + "px";
     brokenHeart.style.pointerEvents = "none";
+
     container.appendChild(brokenHeart);
+
+    heart.style.visibility = "hidden";
 
     new Audio("snd_break1_c.wav").play();
 
     setTimeout(() => {
-        brokenHeart.remove();
 
         new Audio("snd_break2_c.wav").play();
+        brokenHeart.remove();
 
         const debrisImgs = [
             "imgs/heart_debris1.png",
@@ -667,6 +677,7 @@ function explodeHeart(heart, callback) {
             "imgs/heart_debris3.png",
             "imgs/heart_debris4.png"
         ];
+
         const debrisElements = [];
 
         debrisImgs.forEach(src => {
@@ -683,22 +694,35 @@ function explodeHeart(heart, callback) {
             debrisElements.push(d);
         });
 
-        const directions = [
-            { x: -50, y: -50 },
-            { x: 50, y: -50 },
-            { x: -50, y: 50 },
-            { x: 50, y: 50 }
+        const directions = [{
+                x: -60,
+                y: -60
+            },
+            {
+                x: 60,
+                y: -60
+            },
+            {
+                x: -60,
+                y: 60
+            },
+            {
+                x: 60,
+                y: 60
+            }
         ];
 
         debrisElements.forEach((d, i) => {
             requestAnimationFrame(() => {
-                d.style.transform = `translate(${directions[i].x}px, ${directions[i].y}px) rotate(${Math.random() * 360}deg)`;
+                d.style.transform =
+                    `translate(${directions[i].x}px, ${directions[i].y}px) rotate(${Math.random() * 360}deg)`;
                 d.style.opacity = 0;
             });
         });
 
         setTimeout(() => {
             debrisElements.forEach(d => d.remove());
+            heart.remove();
             if (callback) callback();
         }, 2000);
 
