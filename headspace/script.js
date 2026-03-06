@@ -436,7 +436,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const maxHeight = polaroid.clientHeight;
 
             p.style.fontSize = size + "px";
-            while (p.scrollHeight > maxHeight && size > 6) {
+            while (p.scrollHeight > maxHeight && size > 4) {
                 size--;
                 p.style.fontSize = size + "px";
             }
