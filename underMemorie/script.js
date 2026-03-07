@@ -68,7 +68,7 @@ function updateSelection() {
 options.forEach(opt => opt.setAttribute("data-text", opt.textContent));
 updateSelection();
 
-const memories = ["bk", "anime", "princess", "quack", "yt", "wit", "back", "rblx", "truth", "tranzit", "dntstarve", "rrpo", "rof2", "elliotCAMPING", "skyBO2", "F99noitesFILHO", "MASSACRE", "inferiores", "revoROBLOX", "bathroom", "FNAFROBLOX", "monstrosL4D2", "sinistro"];
+const memories = ["bk", "anime", "princess", "quack", "yt", "wit", "back", "rblx", "truth", "tranzit", "dntstarve", "rrpo", "rof2", "camping", "skyBO2", "F99n", "MASSACRE", "inferiores", "revo", "bathroom", "FNAFROBLOX", "monstros", "sinistro"];
 let currentMemoryPage = 0;
 const memoriesPerPage = 6;
 let memTypingTimeouts = [];
@@ -95,15 +95,15 @@ const memoryDescriptions = {
     dntstarve: "Horas gastas para concretizar seus ossos.",
     rrpo: "Sem mais fuga, agora são eles que fogem.",
     rof2: "Jogo do capeta.",
-    elliotCAMPING: "Um dia no acampamento.. o que pode dar errado? (plot: eu era o assassino e matei todos nossos companheiros).",
+    camping: "Um dia no acampamento.. o que pode dar errado? (plot: eu era o assassino e matei todos nossos companheiros).",
     skyBO2: "Depois de tantas noites.. tantas derrotas. O céu é daqueles que persistem.",
-    F99noitesFILHO: "Nosso filho. Nunca vou me esquecer, o primeiro é sempre especial.",
+    F99n: "Nosso filho. Nunca vou me esquecer, o primeiro é sempre especial.",
     MASSACRE: "O dia em que cometemos o maior genocídio da história. Mantivemos os seus corpos em nosso domínio.",
     inferiores: "Pessoas que não mereciam estar no mesmo plano que meu ser. Tiveram o que mereciam por questionar.",
-    revoROBLOX: "Rostos fofos escondendo brutalidades e capacidades destrutivas além do que se chama compreensível.",
+    revo: "Rostos fofos escondendo brutalidades e capacidades destrutivas além do que se chama compreensível.",
     bathroom: "Eu não lhe abandonei, amigo. Só queria ver se você ficaria triste.",
     FNAFROBLOX: "Cinco noites, cinco noites em cada FNaF.. pareceu uma eternidade.",
-    monstrosL4D2: "Se lembra dos monstros? Seus rostos não são borrões. São pessoas em que um dia você confiou.",
+    monstros: "Se lembra dos monstros? Seus rostos não são borrões. São pessoas em que um dia você confiou.",
     sinistro: "O peso de meus pecados rastejavam por cima minhas costas. Não havia mais esperança. Apenas o medo em seu estado mais primário, o mesmo medo de uma vítima sendo caçada por algo que um dia ele chamou de irmão."
 };
 
