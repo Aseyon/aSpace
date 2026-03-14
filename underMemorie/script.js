@@ -961,28 +961,22 @@ music.volume = 0.1;
 const loadingScreen = document.getElementById("loading-screen");
 const loadingBar = document.getElementById("loading-bar");
 
-const images = document.images;
-const totalImages = images.length;
-
-let loadedImages = 0;
+const images = [...document.images];
+let loaded = 0;
 
 function updateLoading() {
-  loadedImages++;
+  loaded++;
 
-  const percent = (loadedImages / totalImages) * 100;
+  const percent = (loaded / images.length) * 100;
   loadingBar.style.width = percent + "%";
 
-  if (loadedImages === totalImages) {
-    finishLoading();
-  }
+  if (loaded === images.length) finishLoading();
 }
 
 function finishLoading() {
-
   loadingBar.style.width = "100%";
 
   setTimeout(() => {
-    loadingScreen.style.transition = "opacity 0.5s";
     loadingScreen.style.opacity = "0";
 
     setTimeout(() => {
@@ -992,17 +986,12 @@ function finishLoading() {
   }, 300);
 }
 
-if (totalImages === 0) {
+if (images.length === 0) {
   finishLoading();
 } else {
-  for (let img of images) {
-
-    if (img.complete) {
-      updateLoading();
-    } else {
-      img.addEventListener("load", updateLoading);
-      img.addEventListener("error", updateLoading);
-    }
-
-  }
+  images.forEach(img => {
+    img.complete
+      ? updateLoading()
+      : img.addEventListener("load", updateLoading, { once: true });
+  });
 }
