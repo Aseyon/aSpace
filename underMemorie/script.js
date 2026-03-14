@@ -961,32 +961,48 @@ music.volume = 0.1;
 const loadingScreen = document.getElementById("loading-screen");
 const loadingBar = document.getElementById("loading-bar");
 
-let progress = 0;
+const images = document.images;
+const totalImages = images.length;
 
-const loadingAnim = setInterval(() => {
+let loadedImages = 0;
 
-  if(progress < 90){
-    progress += Math.random()*5;
-    loadingBar.style.width = progress + "%";
+function updateLoading() {
+  loadedImages++;
+
+  const percent = (loadedImages / totalImages) * 100;
+  loadingBar.style.width = percent + "%";
+
+  if (loadedImages === totalImages) {
+    finishLoading();
   }
+}
 
-},120);
-
-window.addEventListener("load", () => {
-
-  clearInterval(loadingAnim);
+function finishLoading() {
 
   loadingBar.style.width = "100%";
 
-  setTimeout(()=>{
-
+  setTimeout(() => {
     loadingScreen.style.transition = "opacity 0.5s";
     loadingScreen.style.opacity = "0";
 
-    setTimeout(()=>{
+    setTimeout(() => {
       loadingScreen.remove();
-    },500);
+    }, 500);
 
-  },400);
+  }, 300);
+}
 
-});
+if (totalImages === 0) {
+  finishLoading();
+} else {
+  for (let img of images) {
+
+    if (img.complete) {
+      updateLoading();
+    } else {
+      img.addEventListener("load", updateLoading);
+      img.addEventListener("error", updateLoading);
+    }
+
+  }
+}
