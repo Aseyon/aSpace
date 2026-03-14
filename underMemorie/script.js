@@ -956,4 +956,37 @@ window.addEventListener("resize", updateSansPosition);
 updateSansPosition();
 
 const music = document.getElementById("bgMusic");
-music.volume = 0.3;
+music.volume = 0.1;
+
+const loadingScreen = document.getElementById("loading-screen");
+const loadingBar = document.getElementById("loading-bar");
+
+let progress = 0;
+
+const loadingAnim = setInterval(() => {
+
+  if(progress < 90){
+    progress += Math.random()*5;
+    loadingBar.style.width = progress + "%";
+  }
+
+},120);
+
+window.addEventListener("load", () => {
+
+  clearInterval(loadingAnim);
+
+  loadingBar.style.width = "100%";
+
+  setTimeout(()=>{
+
+    loadingScreen.style.transition = "opacity 0.5s";
+    loadingScreen.style.opacity = "0";
+
+    setTimeout(()=>{
+      loadingScreen.remove();
+    },500);
+
+  },400);
+
+});
