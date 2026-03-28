@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="loading">
+<head>
+	<script>
+		document.documentElement.classList.add("loading");
+	</script>
+	<link rel="icon" href="favicon_omori/favicon.ico">
+
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<title>Ace Memories</title>
+
+    <link rel="stylesheet" href="menu.css">
+</head>
+
+<body>
+
+<div id="menu-loading">
+	<div class="menu-loading-inner">
+		<img src="imgs/mewosleep.gif" class="menu-loading-gif" alt="Mewo sleeping">
+		<p class="menu-loading-text">CARREGANDO<span class="dots"></span></p>
+	</div>
+</div>
+
+
+	</div>
+</div>
+
+	<div id="overlay"></div>
+
+	<div id="menu-overlay">
+		<div class="menu-layout">
+			<div class="menu-title">
+				ACE MEM<span class="lamp"><img src="imgs/lamp.png" alt="O"></span>RIES
+			</div>
+
+			<div class="menu-side left">
+				<span class="arrow">
+					<img src="imgs/hand.gif" alt="">
+				</span>
+				<div class="menu-button active" data-action="headspace">HEADSPACE</div>
+			</div>
+
+			<div class="menu-side right">
+				<span class="arrow">
+					<img src="imgs/hand.gif" alt="">
+				</span>
+				<div class="menu-button" data-action="darkroom">DARK ROOM</div>
+			</div>
+
+			<img src="imgs/Omori_Title_Screen_Normal.gif" class="menu-gif" alt="Menu">
+
+			<audio id="menu-sound" src="SYS_cursor.ogg"></audio>
+			<audio id="menu-confirm-sound" src="SYS_select.ogg" preload="auto"></audio>
+		</div>
+	</div>
+
+	<script src="menu.js" defer></script>
+</body>
+</html>
