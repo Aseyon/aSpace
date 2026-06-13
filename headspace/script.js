@@ -1,462 +1,605 @@
-(function() {
-    const svg = document.getElementById("grassSVG");
-    const path = document.getElementById("grassPath");
-    if (!svg || !path) return;
+(function () {
+    "use strict";
 
-    const W = 1600;
-    const H = 500;
-    const baseY = 390;
-    const strands = 60;
+    const SELECTORS = {
+        grassSvg: "#grassSVG",
+        grassPath: "#grassPath",
+        portraits: ".portrait-container",
+        overlay: "#overlay",
+        bookWrap: "#bookWrap",
+        book: "#book",
+        coverFront: ".cover.front",
+        coverBack: ".cover.back",
+        coverSpine: ".cover-spine",
+        pages: ".page",
+        catArms: ".cat-arms",
+        bgm: "#bgm",
+        preload: "#preload",
+        textBlocks: ".text-block",
+        pageLayout: ".page-layout",
+        polaroid: ".polaroid"
+    };
 
-    const dna = Array.from({
-        length: strands
-    }, () => ({
-        height: 110 + Math.random() * 70,
-        lean: (Math.random() - 0.5) * 20,
-        curve: 20 + Math.random() * 35,
-        waveSpeed: 0.4 + Math.random() * 1.1,
-        waveOffset: Math.random() * 1000
-    }));
+    const PORTRAIT_CAPTION_MAX_CHARS = 20;
+    const BOOK_FLIP_TIME = 800;
+    const MUSIC_FADE_DURATION = 2500;
+    const MUSIC_FADE_STEPS = 50;
 
-    let rawX = NaN;
-    let smoothX = NaN;
-    let influence = 0;
-    let lastMove = 0;
+    const $ = (selector, scope = document) => scope.querySelector(selector);
+    const $$ = (selector, scope = document) => Array.from(scope.querySelectorAll(selector));
 
-    svg.addEventListener("mousemove", e => {
-        const r = svg.getBoundingClientRect();
-        rawX = (e.clientX - r.left) * (W / r.width);
-        influence = 1;
-        lastMove = performance.now();
-    });
+    function listen(target, eventName, handler, options) {
+        if (!target) return;
+        target.addEventListener(eventName, handler, options);
+    }
 
-    svg.addEventListener("mouseleave", () => rawX = NaN);
-
-    function generate(t) {
-        if (!Number.isNaN(rawX)) {
-            if (Number.isNaN(smoothX)) smoothX = rawX;
-            smoothX += (rawX - smoothX) * 0.12;
-        } else if (!Number.isNaN(smoothX)) {
-            smoothX += (W * 0.5 - smoothX) * 0.018;
+    function onReady(callback) {
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", callback, { once: true });
+            return;
         }
 
-        if (performance.now() - lastMove > 80) {
+        callback();
+    }
+
+    function onLoaded(callback) {
+        if (document.readyState === "complete") {
+            callback();
+            return;
+        }
+
+        window.addEventListener("load", callback, { once: true });
+    }
+
+    function isValidNumber(value) {
+        return !Number.isNaN(value);
+    }
+
+    function initGrass() {
+        const svg = $(SELECTORS.grassSvg);
+        const path = $(SELECTORS.grassPath);
+        if (!svg || !path) return;
+
+        const width = 1600;
+        const height = 500;
+        const baseY = 390;
+        const strands = 60;
+        const windRadius = 280;
+
+        const grassData = Array.from({ length: strands }, () => ({
+            height: 110 + Math.random() * 70,
+            lean: (Math.random() - 0.5) * 20,
+            curve: 20 + Math.random() * 35,
+            waveSpeed: 0.4 + Math.random() * 1.1,
+            waveOffset: Math.random() * 1000
+        }));
+
+        let rawX = NaN;
+        let smoothX = NaN;
+        let influence = 0;
+        let lastMove = 0;
+
+        listen(svg, "mousemove", (event) => {
+            const rect = svg.getBoundingClientRect();
+            rawX = (event.clientX - rect.left) * (width / rect.width);
+            influence = 1;
+            lastMove = performance.now();
+        });
+
+        listen(svg, "mouseleave", () => {
+            rawX = NaN;
+        });
+
+        function updateMouseInfluence() {
+            if (isValidNumber(rawX)) {
+                if (!isValidNumber(smoothX)) smoothX = rawX;
+                smoothX += (rawX - smoothX) * 0.12;
+            } else if (isValidNumber(smoothX)) {
+                smoothX += (width * 0.5 - smoothX) * 0.018;
+            }
+
+            if (performance.now() - lastMove <= 80) return;
+
             influence *= 0.94;
             if (influence < 0.01) influence = 0;
         }
 
-        let d = `M 0 ${H} L 0 ${baseY} `;
-        for (let i = 0; i < strands; i++) {
-            const x = (i / (strands - 1)) * W;
-            const g = dna[i];
+        function getLocalWind(x) {
+            if (!influence || !isValidNumber(smoothX)) return 0;
 
-            const globalSway = Math.sin(t * g.waveSpeed + g.waveOffset) * 6;
-            let localWind = 0;
+            const distance = Math.abs(smoothX - x);
+            if (distance >= windRadius) return 0;
 
-            if (influence && !Number.isNaN(smoothX)) {
-                const dist = Math.abs(smoothX - x);
-                if (dist < 280) localWind = (1 - dist / 280) * 80 * influence;
-            }
-
-            const top = baseY - g.height * 0.75 + Math.sin(i * 0.45 + t * 1.1) * 8;
-            const sway = g.lean + globalSway + localWind * 0.16;
-
-            d += `
-                C ${x - g.curve * 0.5} ${baseY - 40}
-                  ${x + sway * 0.2} ${top + 28}
-                  ${x + sway} ${top}
-                C ${x + sway * 0.2} ${top + 22}
-                  ${x + g.curve * 0.5} ${baseY - 38}
-                  ${x + W / strands} ${baseY}
-            `;
+            return (1 - distance / windRadius) * 80 * influence;
         }
 
-        d += `L ${W} ${H} Z`;
-        return d;
-    }
+        function generateGrassPath(time) {
+            updateMouseInfluence();
 
-    function animate() {
-        path.setAttribute("d", generate(performance.now() / 900));
-        requestAnimationFrame(animate);
-    }
+            let d = `M 0 ${height} L 0 ${baseY} `;
 
-    animate();
-})();
+            grassData.forEach((strand, index) => {
+                const x = (index / (strands - 1)) * width;
+                const globalSway = Math.sin(time * strand.waveSpeed + strand.waveOffset) * 6;
+                const localWind = getLocalWind(x);
+                const top = baseY - strand.height * 0.75 + Math.sin(index * 0.45 + time * 1.1) * 8;
+                const sway = strand.lean + globalSway + localWind * 0.16;
 
-const portraits = document.querySelectorAll(".portrait-container");
-const overlay = document.getElementById("overlay");
-const MAX_CHARS = 20;
-
-function truncateCaption(caption) {
-    const full = caption.dataset.fulltext;
-    caption.innerText =
-        full.length > MAX_CHARS ? full.substring(0, MAX_CHARS) : full;
-}
-
-portraits.forEach((p) => {
-    const caption = p.querySelector(".caption-box");
-    if (caption) {
-        caption.dataset.fulltext = caption.innerText.trim();
-        truncateCaption(caption);
-    }
-});
-
-function updateSupport(wrapper, support, tape) {
-    if (!wrapper || !support) return;
-
-    const width = wrapper.offsetWidth;
-    const height = wrapper.offsetHeight;
-    const paddingX = 12;
-    const paddingY = 12;
-
-    support.style.width = width + paddingX * 2 + "px";
-    support.style.height = height + paddingY * 2 + "px";
-    support.style.top = wrapper.offsetTop - paddingY + "px";
-    support.style.left = wrapper.offsetLeft - paddingX + "px";
-    support.style.zIndex = 10;
-
-    if (tape) {
-        const tapePadding = 8;
-        tape.style.top = support.offsetTop - tapePadding + "px";
-        tape.style.left =
-            support.offsetLeft +
-            support.offsetWidth / 2 -
-            tape.offsetWidth / 2 +
-            "px";
-        tape.style.zIndex = 15;
-    }
-}
-
-function updateAllSupports() {
-    portraits.forEach((p) => {
-        const wrapper = p.querySelector(".photo-wrapper");
-        const support = p.querySelector(".photo-support");
-        const tape = p.querySelector(".tape-realista");
-        updateSupport(wrapper, support, tape);
-    });
-}
-
-portraits.forEach((p) => {
-    p.addEventListener("click", (e) => {
-        try {
-            startMusic();
-        } catch (err) {}
-
-        if (p.classList.contains("zoomed")) {
-            closeZoomedPhoto(p);
-        } else {
-            portraits.forEach((other) => {
-                if (other !== p) closeZoomedPhoto(other);
+                d += [
+                    `C ${x - strand.curve * 0.5} ${baseY - 40}`,
+                    `${x + sway * 0.2} ${top + 28}`,
+                    `${x + sway} ${top}`,
+                    `C ${x + sway * 0.2} ${top + 22}`,
+                    `${x + strand.curve * 0.5} ${baseY - 38}`,
+                    `${x + width / strands} ${baseY}`
+                ].join(" ");
             });
 
-            const wrapper = p.querySelector(".photo-wrapper");
-            const support = p.querySelector(".photo-support");
-            const tape = p.querySelector(".tape-realista");
-            const caption = p.querySelector(".caption-box");
+            return `${d} L ${width} ${height} Z`;
+        }
+
+        function animateGrass() {
+            path.setAttribute("d", generateGrassPath(performance.now() / 900));
+            requestAnimationFrame(animateGrass);
+        }
+
+        animateGrass();
+    }
+
+    function initPortraits() {
+        const portraits = $$(SELECTORS.portraits);
+        const overlay = $(SELECTORS.overlay);
+        if (!portraits.length || !overlay) return;
+
+        function truncateCaption(caption) {
+            const fullText = caption.dataset.fulltext || caption.textContent.trim();
+            caption.textContent = fullText.length > PORTRAIT_CAPTION_MAX_CHARS
+                ? fullText.slice(0, PORTRAIT_CAPTION_MAX_CHARS)
+                : fullText;
+        }
+
+        function updateSupport(wrapper, support, tape) {
+            if (!wrapper || !support) return;
+
+            const paddingX = 12;
+            const paddingY = 12;
+
+            support.style.width = `${wrapper.offsetWidth + paddingX * 2}px`;
+            support.style.height = `${wrapper.offsetHeight + paddingY * 2}px`;
+            support.style.top = `${wrapper.offsetTop - paddingY}px`;
+            support.style.left = `${wrapper.offsetLeft - paddingX}px`;
+            support.style.zIndex = 10;
+
+            if (!tape) return;
+
+            const tapePadding = 8;
+            tape.style.top = `${support.offsetTop - tapePadding}px`;
+            tape.style.left = `${support.offsetLeft + support.offsetWidth / 2 - tape.offsetWidth / 2}px`;
+            tape.style.zIndex = 15;
+        }
+
+        function getPortraitParts(portrait) {
+            return {
+                wrapper: $(".photo-wrapper", portrait),
+                support: $(".photo-support", portrait),
+                tape: $(".tape-realista", portrait),
+                caption: $(".caption-box", portrait)
+            };
+        }
+
+        function updateAllSupports() {
+            portraits.forEach((portrait) => {
+                const { wrapper, support, tape } = getPortraitParts(portrait);
+                updateSupport(wrapper, support, tape);
+            });
+        }
+
+        function showOverlay() {
+            overlay.style.opacity = "1";
+            overlay.style.pointerEvents = "auto";
+        }
+
+        function hideOverlay() {
+            overlay.style.opacity = "0";
+            overlay.style.pointerEvents = "none";
+        }
+
+        function closeZoomedPhoto(photo) {
+            const portrait = photo || $(".portrait-container.zoomed");
+            if (!portrait) return;
+
+            const { wrapper, support, tape, caption } = getPortraitParts(portrait);
+
+            portrait.classList.remove("zoomed");
+            portrait.style.transform = "";
+            portrait.style.zIndex = "";
+
+            if (caption) truncateCaption(caption);
+
+            updateSupport(wrapper, support, tape);
+            hideOverlay();
+        }
+
+        function openZoomedPhoto(portrait) {
+            portraits.forEach((other) => {
+                if (other !== portrait) closeZoomedPhoto(other);
+            });
+
+            const { wrapper, support, tape, caption } = getPortraitParts(portrait);
+            if (!wrapper) return;
 
             if (caption) {
-                caption.innerText = caption.dataset.fulltext;
+                caption.textContent = caption.dataset.fulltext || caption.textContent;
                 caption.style.height = "auto";
                 caption.style.maxHeight = "none";
             }
 
-            p.style.transform = "none";
-            p.style.zIndex = "";
-            p.getBoundingClientRect();
+            portrait.style.transform = "none";
+            portrait.style.zIndex = "";
 
             const rect = wrapper.getBoundingClientRect();
             const scaleX = (window.innerWidth * 0.9) / rect.width;
             const scaleY = (window.innerHeight * 0.9) / rect.height;
             const maxScale = Math.min(scaleX, scaleY, 2.2);
+            const centerX = window.innerWidth / 2 - (rect.left + rect.width / 2);
+            const centerY = window.innerHeight / 2 - (rect.top + rect.height / 2);
 
-            const centerX =
-                window.innerWidth / 2 - (rect.left + rect.width / 2);
-            const centerY =
-                window.innerHeight / 2 - (rect.top + rect.height / 2);
+            portrait.style.transform = `translate(${centerX}px, ${centerY}px) scale(${maxScale})`;
+            portrait.style.zIndex = 70;
+            portrait.classList.add("zoomed");
 
-            p.style.transform = `translate(${centerX}px, ${centerY}px) scale(${maxScale})`;
-            p.style.zIndex = 70;
-            p.classList.add("zoomed");
-
-            overlay.style.opacity = "1";
-            overlay.style.pointerEvents = "auto";
-
+            showOverlay();
             updateSupport(wrapper, support, tape);
         }
 
-        e.stopPropagation();
-    });
-});
+        portraits.forEach((portrait) => {
+            const { caption } = getPortraitParts(portrait);
 
-function closeZoomedPhoto(photo) {
-    const p = photo || document.querySelector(".portrait-container.zoomed");
-    if (!p) return;
+            if (caption) {
+                caption.dataset.fulltext = caption.textContent.trim();
+                truncateCaption(caption);
+            }
 
-    const wrapper = p.querySelector(".photo-wrapper");
-    const support = p.querySelector(".photo-support");
-    const tape = p.querySelector(".tape-realista");
-    const caption = p.querySelector(".caption-box");
+            listen(portrait, "click", (event) => {
+                startMusic();
 
-    p.classList.remove("zoomed");
-    p.style.transform = "";
-    p.style.zIndex = "";
+                if (portrait.classList.contains("zoomed")) {
+                    closeZoomedPhoto(portrait);
+                } else {
+                    openZoomedPhoto(portrait);
+                }
 
-    if (caption) truncateCaption(caption);
+                event.stopPropagation();
+            });
+        });
 
-    updateSupport(wrapper, support, tape);
+        listen(overlay, "click", () => closeZoomedPhoto());
 
-    overlay.style.opacity = "0";
-    overlay.style.pointerEvents = "none";
-}
+        listen(document, "click", (event) => {
+            const zoomedPhoto = $(".portrait-container.zoomed");
+            if (!zoomedPhoto || zoomedPhoto.contains(event.target)) return;
 
-overlay.addEventListener("click", () => closeZoomedPhoto());
+            closeZoomedPhoto(zoomedPhoto);
+        });
 
-document.addEventListener("click", (e) => {
-    const zoomedPhoto = document.querySelector(".portrait-container.zoomed");
-    if (!zoomedPhoto) return;
+        onLoaded(updateAllSupports);
+        listen(window, "resize", updateAllSupports);
+    }
 
-    if (zoomedPhoto.contains(e.target)) return;
+    function initBook() {
+        const bookWrap = $(SELECTORS.bookWrap);
+        const book = $(SELECTORS.book);
+        if (!bookWrap || !book) return;
 
-    closeZoomedPhoto(zoomedPhoto);
-});
+        const coverFront = $(SELECTORS.coverFront, book);
+        const coverBack = $(SELECTORS.coverBack, book);
+        const coverSpine = $(SELECTORS.coverSpine, book);
+        const pages = $$(SELECTORS.pages, book);
+        const catArms = $(SELECTORS.catArms);
 
-window.addEventListener("load", updateAllSupports);
-window.addEventListener("resize", updateAllSupports);
+        if (!coverFront || !coverBack || !pages.length) return;
 
-const bookWrap = document.getElementById("bookWrap");
-const book = document.getElementById("book");
-const coverFront = book.querySelector(".cover.front");
-const coverBack = book.querySelector(".cover.back");
-let pages = Array.from(book.querySelectorAll(".page")).reverse();
-const catArms = document.querySelector(".cat-arms");
+        let opened = false;
+        let currentPage = 0;
+        let animating = false;
 
-let opened = false;
-let currentPage = 0;
-
-book.addEventListener("click", (e) => {
-    if (!opened || animating) return;
-
-    const rect = book.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-
-    if (clickX > rect.width / 2) {
-        if (currentPage < pages.length) {
-            flipPage(pages[currentPage]);
-        }
-    } else {
-        if (currentPage > 0) {
+        function lockAnimation(duration = BOOK_FLIP_TIME) {
             animating = true;
+            window.setTimeout(() => {
+                animating = false;
+            }, duration);
+        }
+
+        function animateCatArms(action) {
+            if (!catArms) return;
+
+            const animations = {
+                open: "arm-open 0.5s cubic-bezier(.22,.9,.33,1) forwards",
+                flip: "arm-flip 0.5s cubic-bezier(.22,.9,.33,1) forwards",
+                close: "arm-close 0.5s cubic-bezier(.22,.9,.33,1) forwards"
+            };
+
+            if (!animations[action]) return;
+
+            catArms.style.animation = "none";
+            void catArms.offsetWidth;
+            catArms.style.animation = animations[action];
+        }
+
+        function getPageZIndex(page, index) {
+            return page.classList.contains("flipped")
+                ? index + 1
+                : pages.length - index;
+        }
+
+        function updatePageStack() {
+            pages.forEach((page, index) => {
+                page.style.zIndex = getPageZIndex(page, index);
+                page.style.pointerEvents = page.classList.contains("flipped") ? "none" : "auto";
+            });
+        }
+
+        function resetPages() {
+            pages.forEach((page) => {
+                page.classList.remove("flipped");
+                page.style.pointerEvents = "auto";
+            });
+
+            updatePageStack();
+        }
+
+        function centerBook() {
+            bookWrap.style.position = "fixed";
+            bookWrap.style.top = "50%";
+            bookWrap.style.left = "50%";
+            bookWrap.style.transform = "translate(-50%, -50%) scale(1)";
+        }
+
+        function openBook() {
+            if (opened || animating) return;
+
+            opened = true;
+            currentPage = 0;
+            lockAnimation();
+            animateCatArms("open");
+
+            coverFront.style.zIndex = pages.length + 2;
+            coverFront.classList.remove("close");
+            coverFront.classList.add("open");
+            resetPages();
+
+            const pageWidth = coverFront.offsetWidth;
+            requestAnimationFrame(() => {
+                bookWrap.style.transform = `translate(calc(-50% + ${pageWidth / 2}px), -50%)`;
+            });
+
+            window.setTimeout(() => {
+                if (opened) coverFront.style.zIndex = 0;
+            }, BOOK_FLIP_TIME);
+        }
+
+        function flipPage(page) {
+            if (!opened || animating || !page || page.classList.contains("flipped")) return;
+
+            lockAnimation();
+            animateCatArms("flip");
+
+            page.classList.add("flipped");
+            currentPage++;
+            updatePageStack();
+        }
+
+        function previousPage() {
+            if (!opened || animating || currentPage <= 0) return;
+
+            lockAnimation();
             animateCatArms("flip");
 
             currentPage--;
             const page = pages[currentPage];
             page.classList.remove("flipped");
-            page.style.zIndex = currentPage + 1;
-
-            setTimeout(() => animating = false, FLIP_TIME);
+            updatePageStack();
         }
-    }
-});
 
+        function closeBook() {
+            if (!opened || animating || currentPage < pages.length) return;
 
-function centerBook() {
-    bookWrap.style.position = "fixed";
-    bookWrap.style.top = "50%";
-    bookWrap.style.left = "50%";
+            const closeDuration = pages.length * 50 + 300;
+            animating = true;
+            animateCatArms("close");
 
-    let scale = opened ? 1 : 1;
-    bookWrap.style.transform = `translate(-50%, -50%) scale(${scale})`;
-}
-window.addEventListener("load", centerBook);
+            pages.forEach((page, index) => {
+                window.setTimeout(() => {
+                    page.classList.remove("flipped");
+                    page.style.pointerEvents = "auto";
+                    updatePageStack();
+                }, index * 50);
+            });
 
-function animateCatArms(action) {
-    if (!catArms) return;
-    catArms.style.animation = "none";
-    void catArms.offsetWidth;
-    if (action === "open")
-        catArms.style.animation =
-        "arm-open 0.5s cubic-bezier(.22,.9,.33,1) forwards";
-    else if (action === "flip")
-        catArms.style.animation =
-        "arm-flip 0.5s cubic-bezier(.22,.9,.33,1) forwards";
-    else if (action === "close")
-        catArms.style.animation =
-        "arm-close 0.5s cubic-bezier(.22,.9,.33,1) forwards";
-}
+            window.setTimeout(() => {
+                coverFront.style.zIndex = pages.length + 2;
+                coverFront.classList.remove("open");
+                coverFront.classList.add("close");
+                opened = false;
+                currentPage = 0;
 
-const spine = book.querySelector(".cover-spine");
-if (spine) spine.style.zIndex = 0;
+                requestAnimationFrame(() => {
+                    bookWrap.style.transform = "translate(-50%, -50%) scale(1)";
+                });
 
-pages.forEach((p, i) => {
-    p.classList.remove("flipped");
-    p.style.zIndex = i + 1;
-});
-
-coverFront.style.zIndex = pages.length + 2;
-coverBack.style.zIndex = 0;
-
-function openBook() {
-    if (opened) return;
-    opened = true;
-    currentPage = 0;
-
-    animateCatArms("open");
-    coverFront.classList.remove("close");
-    coverFront.classList.add("open");
-
-    pages.forEach((p, i) => {
-        p.classList.remove("flipped");
-        p.style.zIndex = i + 1;
-    });
-
-    const pageWidth = coverFront.offsetWidth;
-    requestAnimationFrame(() => {
-        bookWrap.style.transform = `translate(calc(-50% + ${pageWidth / 2}px), -50%)`;
-    });
-}
-
-function flipPage(page) {
-    if (!opened) return;
-    if (page.classList.contains("flipped")) return;
-
-    animateCatArms("flip");
-    page.classList.add("flipped");
-    currentPage++;
-
-    const coverZ = parseInt(coverFront.style.zIndex, 10) || (pages.length + 2);
-    page.style.zIndex = coverZ + 1;
-
-    pages.forEach((p, i) => {
-        if (!p.classList.contains("flipped")) {
-            p.style.zIndex = i + 1;
+                animating = false;
+            }, closeDuration);
         }
-    });
-}
 
-function closeBook() {
-    if (!opened) return;
-    if (currentPage < pages.length) return;
+        if (coverSpine) coverSpine.style.zIndex = 0;
 
-    animateCatArms("close");
-
-    pages.forEach((p, i) => {
-        setTimeout(() => {
-            p.classList.remove("flipped");
-            p.style.zIndex = i + 1;
-        }, i * 50);
-    });
-
-    setTimeout(() => {
-        coverFront.classList.remove("open");
-        coverFront.classList.add("close");
+        resetPages();
         coverFront.style.zIndex = pages.length + 2;
-        opened = false;
-        currentPage = 0;
+        coverBack.style.zIndex = 0;
 
-        requestAnimationFrame(() => {
-            bookWrap.style.transform = `translate(-50%, -50%) scale(1)`;
-        });
-    }, pages.length * 50 + 300);
-}
+        listen(book, "click", (event) => {
+            if (!opened || animating) return;
 
-coverFront.addEventListener("click", openBook);
-pages.forEach((p) => p.addEventListener("click", () => flipPage(p)));
-coverBack.addEventListener("click", closeBook);
+            const rect = book.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
 
-
-const bgm = document.getElementById("bgm");
-
-let started = false;
-const FADE_DURATION = 2500;
-const STEPS = 50;
-
-function startMusic() {
-    if (started || !bgm) return;
-
-    started = true;
-
-    bgm.volume = 0;
-    bgm.load();
-
-    const stepTime = FADE_DURATION / STEPS;
-    const stepVolume = 1 / STEPS;
-
-    const play = () => {
-        bgm.play().catch(err => {
-            console.warn("Falhou:", err);
-            started = false;
-        });
-
-        let vol = 0;
-        const fade = setInterval(() => {
-            vol += stepVolume;
-            if (vol >= 1) {
-                bgm.volume = 1;
-                clearInterval(fade);
+            if (clickX > rect.width / 2) {
+                flipPage(pages[currentPage]);
             } else {
-                bgm.volume = vol;
-            }
-        }, stepTime);
-
-        removeListeners();
-        bgm.removeEventListener("canplaythrough", play);
-    };
-
-    bgm.readyState >= 3 ?
-        play() :
-        bgm.addEventListener("canplaythrough", play, {
-            once: true
-        });
-}
-
-function removeListeners() {
-    ["click", "keydown", "scroll"].forEach(evt =>
-        window.removeEventListener(evt, startMusic)
-    );
-}
-
-["click", "keydown", "scroll"].forEach(evt =>
-    window.addEventListener(evt, startMusic, {
-        once: true
-    })
-);
-
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    const fitText = () => {
-        document.querySelectorAll(".text-block").forEach(block => {
-            const p = block.querySelector("p");
-            const polaroid = block.closest(".page-layout")
-                ?.querySelector(".polaroid");
-
-            if (!p || !polaroid) return;
-
-            let size = 18;
-            const maxHeight = polaroid.clientHeight;
-
-            p.style.fontSize = size + "px";
-            while (p.scrollHeight > maxHeight && size > 4) {
-                size--;
-                p.style.fontSize = size + "px";
+                previousPage();
             }
         });
-    };
 
-    let resizeRAF;
-    window.addEventListener("resize", () => {
-        cancelAnimationFrame(resizeRAF);
-        resizeRAF = requestAnimationFrame(fitText);
+        listen(coverFront, "click", (event) => {
+            event.stopPropagation();
+            openBook();
+        });
+
+        listen(coverBack, "click", (event) => {
+            event.stopPropagation();
+            closeBook();
+        });
+
+        onLoaded(centerBook);
+    }
+
+    let musicStarted = false;
+    let musicFadeTimer = null;
+
+    function initMusic() {
+        const bgm = $(SELECTORS.bgm);
+        if (!bgm) return;
+
+        const startEvents = ["click", "keydown", "scroll"];
+
+        function removeStartListeners() {
+            startEvents.forEach((eventName) => {
+                window.removeEventListener(eventName, startMusic);
+            });
+        }
+
+        function addStartListeners() {
+            startEvents.forEach((eventName) => {
+                window.addEventListener(eventName, startMusic, { once: true });
+            });
+        }
+
+        function fadeIn() {
+            clearInterval(musicFadeTimer);
+
+            let volume = 0;
+            const stepTime = MUSIC_FADE_DURATION / MUSIC_FADE_STEPS;
+            const stepVolume = 1 / MUSIC_FADE_STEPS;
+
+            musicFadeTimer = window.setInterval(() => {
+                volume += stepVolume;
+
+                if (volume >= 1) {
+                    bgm.volume = 1;
+                    clearInterval(musicFadeTimer);
+                    return;
+                }
+
+                bgm.volume = volume;
+            }, stepTime);
+        }
+
+        window.startMusic = function startMusicFromWindow() {
+            startMusic();
+        };
+
+        startMusic = function startMusicFromInteraction() {
+            if (musicStarted || !bgm) return;
+
+            musicStarted = true;
+            bgm.volume = 0;
+            bgm.load();
+            removeStartListeners();
+
+            const play = () => {
+                bgm.removeEventListener("canplaythrough", play);
+
+                const playPromise = bgm.play();
+
+                if (!playPromise || typeof playPromise.then !== "function") {
+                    fadeIn();
+                    return;
+                }
+
+                playPromise
+                    .then(fadeIn)
+                    .catch((error) => {
+                        console.warn("Falha ao iniciar a musica:", error);
+                        musicStarted = false;
+                        addStartListeners();
+                    });
+            };
+
+            if (bgm.readyState >= 3) {
+                play();
+            } else {
+                bgm.addEventListener("canplaythrough", play, { once: true });
+            }
+        };
+
+        addStartListeners();
+    }
+
+    let startMusic = function noopStartMusic() {};
+
+    function initTextFitting() {
+        const initialSize = 18;
+        const minSize = 4;
+        let resizeFrame = null;
+
+        function fitText() {
+            $$(SELECTORS.textBlocks).forEach((block) => {
+                const paragraph = $("p", block);
+                const polaroid = block.closest(SELECTORS.pageLayout)?.querySelector(SELECTORS.polaroid);
+                if (!paragraph || !polaroid) return;
+
+                let size = initialSize;
+                const maxHeight = polaroid.clientHeight;
+
+                paragraph.style.fontSize = `${size}px`;
+
+                while (paragraph.scrollHeight > maxHeight && size > minSize) {
+                    size--;
+                    paragraph.style.fontSize = `${size}px`;
+                }
+            });
+        }
+
+        listen(window, "resize", () => {
+            cancelAnimationFrame(resizeFrame);
+            resizeFrame = requestAnimationFrame(fitText);
+        });
+
+        onLoaded(fitText);
+    }
+
+    function initPreload() {
+        onLoaded(() => {
+            document.documentElement.classList.remove("loading");
+
+            const preload = $(SELECTORS.preload);
+            if (!preload) return;
+
+            preload.style.transition = "opacity .6s ease";
+            preload.style.opacity = "0";
+
+            window.setTimeout(() => {
+                preload.remove();
+            }, 600);
+        });
+    }
+
+    onReady(() => {
+        initGrass();
+        initPortraits();
+        initBook();
+        initMusic();
+        initTextFitting();
+        initPreload();
     });
-
-    window.addEventListener("load", fitText);
-});
-
-window.addEventListener("load", () => {
-    document.documentElement.classList.remove("loading");
-    const preload = document.getElementById("preload");
-    if (!preload) return;
-    preload.style.transition = "opacity .6s ease";
-    preload.style.opacity = "0";
-    setTimeout(() => preload.remove(), 600);
-});
+})();

@@ -232,8 +232,10 @@ iconImage.onload = () => {
 
     createObject(px(0.05), 120, '../darkroom/vds/contentwarning1.mp4', ICON_WIDTH, ICON_HEIGHT);
     createObject(px(0.18), 400, '../darkroom/vds/blackops2_1.mp4', ICON_WIDTH, ICON_HEIGHT);
+    createObject(px(0.20), 20, '../darkroom/vds/99apocalipse.mp4', ICON_WIDTH, ICON_HEIGHT);
     createObject(px(0.32), 150, '../darkroom/vds/lockedsouls.mp4', ICON_WIDTH, ICON_HEIGHT);
     createObject(px(0.48), 280, '../darkroom/vds/minePark1.mp4', ICON_WIDTH, ICON_HEIGHT);
+    createObject(px(0.55), 40, '../darkroom/vds/cartas.mp4', ICON_WIDTH, ICON_HEIGHT);
     createObject(px(0.62), 200, '../darkroom/vds/mineDino.mp4', ICON_WIDTH, ICON_HEIGHT);
     createObject(px(0.75), 10, '../darkroom/vds/contentwarning2.mp4', ICON_WIDTH, ICON_HEIGHT);
     createObject(px(0.88), 420, '../darkroom/vds/massacre_escolar.mp4', ICON_WIDTH, ICON_HEIGHT);

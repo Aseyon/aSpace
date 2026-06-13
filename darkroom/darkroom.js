@@ -160,6 +160,28 @@ const mp4Icons = [{
         glitchActive: false,
         glitchFrame: 0,
         glitchTimer: 0
+    },
+    {
+        x: 2300,
+        y: 900,
+        video: "vds/99apocalipse.mp4",
+        width: 48,
+        height: 48,
+        activated: false,
+        glitchActive: false,
+        glitchFrame: 0,
+        glitchTimer: 0
+    },
+    {
+        x: 2500,
+        y: 400,
+        video: "vds/cartas.mp4",
+        width: 48,
+        height: 48,
+        activated: false,
+        glitchActive: false,
+        glitchFrame: 0,
+        glitchTimer: 0
     }
 ];
 

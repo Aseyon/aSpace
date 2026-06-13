@@ -68,7 +68,7 @@ function updateSelection() {
 options.forEach(opt => opt.setAttribute("data-text", opt.textContent));
 updateSelection();
 
-const memories = ["bk", "anime", "princess", "quack", "yt", "wit", "back", "rblx", "truth", "tranzit", "dntstarve", "rrpo", "rof2", "camping", "skyBO2", "F99n", "MASSACRE", "inferiores", "revo", "bathroom", "FNAFROBLOX", "monstros", "sinistro"];
+const memories = ["bk", "anime", "princess", "quack", "yt", "wit", "back", "rblx", "truth", "tranzit", "dntstarve", "rrpo", "rof2", "camping", "skyBO2", "F99n", "MASSACRE", "inferiores", "revo", "bathroom", "FNAFROBLOX", "monstros", "sinistro", "aura", "badtimetrio", "jogoruim", "legendsneverdie",  "navio", "protagonista", "rango", "sonic"];
 let currentMemoryPage = 0;
 const memoriesPerPage = 6;
 let memTypingTimeouts = [];
@@ -104,7 +104,15 @@ const memoryDescriptions = {
     bathroom: "Eu não lhe abandonei, amigo. Só queria ver se você ficaria triste.",
     FNAFROBLOX: "Cinco noites, cinco noites em cada FNaF.. pareceu uma eternidade.",
     monstros: "Se lembra dos monstros? Seus rostos não são borrões. São pessoas em que um dia você confiou.",
-    sinistro: "O peso de meus pecados rastejavam por cima minhas costas. Não havia mais esperança. Apenas o medo em seu estado mais primário, o mesmo medo de uma vítima sendo caçada por algo que um dia ele chamou de irmão."
+    sinistro: "O peso de meus pecados rastejavam por cima minhas costas. Não havia mais esperança. Apenas o medo em seu estado mais primário, o mesmo medo de uma vítima sendo caçada por algo que um dia ele chamou de irmão.",
+    aura: "Finalmente, podemos ir para casa após tanto sofrimento. É hora da batalha final.",
+    badtimetrio: "O trio dos mals tempos que nunca retornou a este jogo.",
+    jogoruim: "Esse jogo era uma merda, mas rendeu uma boa print.",
+    legendsneverdie: "Quando tudo parecer perdido e sem esperança. Lembre-se. Você é o Black Ops, e ele vive em você.",
+    navio: "Propragando enganosa: quando há promessa de fazer um bom navio.",
+    protagonista: "Óbvio, óbvio que eu sou o rei.",
+    rango: "'Só preciso de uma bala...' VAI SE FODER",
+    sonic: "Left 4 Multiverso da Overdose 2."
 };
 
 function showMemory(memName) {
