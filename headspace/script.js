@@ -303,6 +303,42 @@
         let currentPage = 0;
         let animating = false;
 
+        function createNavZone(side) {
+            const zone = document.createElement("button");
+            zone.type = "button";
+            zone.tabIndex = -1;
+            zone.setAttribute("aria-label", side === "left" ? "Voltar pagina" : "Avancar pagina");
+
+            Object.assign(zone.style, {
+                position: "absolute",
+                top: "0",
+                left: side === "left" ? "-100%" : "0",
+                width: "100%",
+                height: "100%",
+                padding: "0",
+                margin: "0",
+                border: "0",
+                opacity: "0",
+                background: "transparent",
+                cursor: "pointer",
+                display: "none",
+                pointerEvents: "none",
+                zIndex: pages.length + 20
+            });
+
+            return zone;
+        }
+
+        const leftNavZone = createNavZone("left");
+        const rightNavZone = createNavZone("right");
+        book.append(leftNavZone, rightNavZone);
+
+        function setPagesVisible(isVisible) {
+            pages.forEach((page) => {
+                page.style.visibility = isVisible ? "visible" : "hidden";
+            });
+        }
+
         function lockAnimation(duration = BOOK_FLIP_TIME) {
             animating = true;
             window.setTimeout(() => {
@@ -335,8 +371,21 @@
         function updatePageStack() {
             pages.forEach((page, index) => {
                 page.style.zIndex = getPageZIndex(page, index);
-                page.style.pointerEvents = page.classList.contains("flipped") ? "none" : "auto";
+                page.style.pointerEvents = "none";
             });
+
+            updateNavZones();
+        }
+
+        function updateNavZones() {
+            const leftEnabled = opened;
+            const rightEnabled = opened && currentPage < pages.length;
+
+            leftNavZone.style.display = leftEnabled ? "block" : "none";
+            leftNavZone.style.pointerEvents = leftEnabled ? "auto" : "none";
+
+            rightNavZone.style.display = rightEnabled ? "block" : "none";
+            rightNavZone.style.pointerEvents = rightEnabled ? "auto" : "none";
         }
 
         function resetPages() {
@@ -363,6 +412,7 @@
             lockAnimation();
             animateCatArms("open");
 
+            setPagesVisible(true);
             coverFront.style.zIndex = pages.length + 2;
             coverFront.classList.remove("close");
             coverFront.classList.add("open");
@@ -379,7 +429,7 @@
         }
 
         function flipPage(page) {
-            if (!opened || animating || !page || page.classList.contains("flipped")) return;
+            if (!opened || animating || !page || page !== pages[currentPage]) return;
 
             lockAnimation();
             animateCatArms("flip");
@@ -387,6 +437,29 @@
             page.classList.add("flipped");
             currentPage++;
             updatePageStack();
+        }
+
+        function closeBookFromFront() {
+            if (!opened || animating || currentPage !== 0) return;
+
+            lockAnimation();
+            animateCatArms("close");
+
+            coverFront.style.zIndex = pages.length + 2;
+            coverFront.classList.remove("open");
+            coverFront.classList.add("close");
+            opened = false;
+            currentPage = 0;
+            resetPages();
+            updateNavZones();
+
+            window.setTimeout(() => {
+                setPagesVisible(false);
+            }, BOOK_FLIP_TIME);
+
+            requestAnimationFrame(() => {
+                bookWrap.style.transform = "translate(-50%, -50%) scale(1)";
+            });
         }
 
         function previousPage() {
@@ -422,37 +495,58 @@
                 coverFront.classList.add("close");
                 opened = false;
                 currentPage = 0;
+                updateNavZones();
 
                 requestAnimationFrame(() => {
                     bookWrap.style.transform = "translate(-50%, -50%) scale(1)";
                 });
 
-                animating = false;
+                window.setTimeout(() => {
+                    setPagesVisible(false);
+                    animating = false;
+                }, BOOK_FLIP_TIME);
             }, closeDuration);
         }
 
         if (coverSpine) coverSpine.style.zIndex = 0;
 
         resetPages();
+        setPagesVisible(false);
         coverFront.style.zIndex = pages.length + 2;
         coverBack.style.zIndex = 0;
 
-        listen(book, "click", (event) => {
-            if (!opened || animating) return;
-
-            const rect = book.getBoundingClientRect();
-            const clickX = event.clientX - rect.left;
-
-            if (clickX > rect.width / 2) {
-                flipPage(pages[currentPage]);
-            } else {
-                previousPage();
-            }
-        });
-
         listen(coverFront, "click", (event) => {
             event.stopPropagation();
+
+            if (opened) {
+                closeBookFromFront();
+                return;
+            }
+
             openBook();
+        });
+
+        listen(leftNavZone, "click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (!opened || animating) return;
+
+            if (currentPage === 0) {
+                closeBookFromFront();
+                return;
+            }
+
+            previousPage();
+        });
+
+        listen(rightNavZone, "click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (!opened || animating || currentPage >= pages.length) return;
+
+            flipPage(pages[currentPage]);
         });
 
         listen(coverBack, "click", (event) => {

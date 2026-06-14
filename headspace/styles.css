@@ -1408,3 +1408,137 @@ html.loading * {
 *:focus {
 	outline: none;
 }
+
+.menu-return {
+	position: fixed;
+	top: clamp(16px, 2.6vw, 28px);
+	right: 0;
+	z-index: 9000;
+	box-sizing: border-box;
+	width: clamp(230px, 18vw, 260px);
+	min-height: 54px;
+	padding: 10px 24px 10px 64px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: flex-start;
+	font-family: 'Patrick Hand', cursive;
+	font-size: clamp(19px, 1.7vw, 23px);
+	line-height: 1.05;
+	letter-spacing: 0.4px;
+	color: #fff8ff;
+	text-decoration: none;
+	background:
+		repeating-linear-gradient(0deg,
+			rgba(255, 255, 255, 0.035) 0 1px,
+			transparent 1px 6px),
+		linear-gradient(145deg, rgba(45, 28, 76, 0.97), rgba(134, 83, 218, 0.94));
+	border: 2px solid rgba(244, 232, 255, 0.78);
+	border-right: 0;
+	border-radius: 18px 0 0 18px;
+	box-shadow:
+		0 10px 24px rgba(0, 0, 0, 0.36),
+		0 0 18px rgba(166, 107, 255, 0.2),
+		inset 0 1px 0 rgba(255, 255, 255, 0.24),
+		inset 1px 0 0 rgba(255, 255, 255, 0.32);
+	cursor: pointer;
+	overflow: hidden;
+	pointer-events: auto;
+	opacity: 0.9;
+	text-shadow: 0 2px 3px rgba(0, 0, 0, 0.45);
+	transform: translateX(calc(100% - 52px));
+	transition:
+		transform 0.46s cubic-bezier(.22, .9, .33, 1),
+		opacity 0.24s ease,
+		box-shadow 0.24s ease,
+		filter 0.24s ease;
+}
+
+.menu-return::before {
+	content: "o";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	width: 48px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 13px;
+	line-height: 1;
+	letter-spacing: 2px;
+	color: rgba(255, 248, 255, 0.86);
+	background: rgba(255, 255, 255, 0.07);
+	border-right: 1px solid rgba(244, 232, 255, 0.22);
+	writing-mode: vertical-rl;
+	text-orientation: mixed;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+	transition:
+		background 0.24s ease,
+		color 0.24s ease;
+}
+
+.menu-return::after {
+	content: none;
+}
+
+.menu-return span {
+	position: relative;
+	z-index: 1;
+	white-space: nowrap;
+	opacity: 0;
+	transform: translateX(12px);
+	transition:
+		opacity 0.22s ease 0.08s,
+		transform 0.26s ease 0.08s;
+}
+
+.menu-return:hover,
+.menu-return:focus-visible {
+	opacity: 1;
+	filter: brightness(1.03);
+	transform: translateX(0);
+	box-shadow:
+		0 14px 30px rgba(0, 0, 0, 0.44),
+		0 0 24px rgba(166, 107, 255, 0.38),
+		0 0 0 2px rgba(255, 255, 255, 0.14),
+		inset 0 1px 0 rgba(255, 255, 255, 0.28),
+		inset 5px 0 0 rgba(255, 255, 255, 0.16);
+	outline: none;
+}
+
+.menu-return:hover::after,
+.menu-return:focus-visible::after {
+	content: none;
+}
+
+.menu-return:hover::before,
+.menu-return:focus-visible::before {
+	background: rgba(255, 255, 255, 0.1);
+	color: rgba(255, 248, 255, 0.55);
+}
+
+.menu-return:hover span,
+.menu-return:focus-visible span {
+	opacity: 1;
+	transform: translateX(0);
+}
+
+.menu-return:active {
+	transform: translateX(0) translateY(1px);
+}
+
+@media (max-width: 560px) {
+	.menu-return {
+		top: 12px;
+		width: 210px;
+		min-height: 48px;
+		padding: 9px 18px 9px 58px;
+		font-size: 18px;
+		transform: translateX(calc(100% - 48px));
+	}
+
+	.menu-return::before {
+		width: 44px;
+		font-size: 12px;
+	}
+}
