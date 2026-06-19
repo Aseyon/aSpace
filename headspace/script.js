@@ -17,7 +17,9 @@
         preload: "#preload",
         textBlocks: ".text-block",
         pageLayout: ".page-layout",
-        polaroid: ".polaroid"
+        polaroid: ".polaroid",
+        picnicReturn: ".picnic-return",
+        pinwheels: ".pinwheel"
     };
 
     const PORTRAIT_CAPTION_MAX_CHARS = 20;
@@ -60,9 +62,9 @@
         const path = $(SELECTORS.grassPath);
         if (!svg || !path) return;
 
-        const width = 1600;
+        const width = 1800;
         const height = 500;
-        const baseY = 390;
+        const baseY = 325;
         const strands = 60;
         const windRadius = 280;
 
@@ -641,6 +643,99 @@
 
     let startMusic = function noopStartMusic() {};
 
+    function initPinwheels() {
+        const markup = `
+            <svg class="pinwheel-svg" viewBox="0 0 420 530" focusable="false">
+                <rect class="pinwheel-stick-shadow" x="199" y="232" width="26" height="284" rx="10"/>
+                <rect class="pinwheel-stick" x="203" y="226" width="16" height="288" rx="8"/>
+                <rect class="pinwheel-stick-highlight" x="208" y="244" width="3" height="248" rx="2"/>
+                <g class="pinwheel-rotor">
+                    <circle class="pinwheel-soft-shadow" cx="210" cy="178" r="138"/>
+                    <path class="pinwheel-fold" d="M210 178 C224 136 258 101 306 78 C319 116 309 150 282 174 C255 169 230 171 210 178Z"/>
+                    <path class="pinwheel-fold" d="M210 178 C224 136 258 101 306 78 C319 116 309 150 282 174 C255 169 230 171 210 178Z" transform="rotate(90 210 178)"/>
+                    <path class="pinwheel-fold" d="M210 178 C224 136 258 101 306 78 C319 116 309 150 282 174 C255 169 230 171 210 178Z" transform="rotate(180 210 178)"/>
+                    <path class="pinwheel-fold" d="M210 178 C224 136 258 101 306 78 C319 116 309 150 282 174 C255 169 230 171 210 178Z" transform="rotate(270 210 178)"/>
+                    <circle class="pinwheel-center-fill" cx="210" cy="178" r="52"/>
+                    <path class="pinwheel-blade" d="M210 178 L210 48 L344 48 C323 75 293 108 258 141 C240 158 224 171 210 178Z"/>
+                    <path class="pinwheel-blade" d="M210 178 L210 48 L344 48 C323 75 293 108 258 141 C240 158 224 171 210 178Z" transform="rotate(90 210 178)"/>
+                    <path class="pinwheel-blade" d="M210 178 L210 48 L344 48 C323 75 293 108 258 141 C240 158 224 171 210 178Z" transform="rotate(180 210 178)"/>
+                    <path class="pinwheel-blade" d="M210 178 L210 48 L344 48 C323 75 293 108 258 141 C240 158 224 171 210 178Z" transform="rotate(270 210 178)"/>
+                    <circle class="pinwheel-hub-ring" cx="210" cy="178" r="19"/>
+                    <circle class="pinwheel-hub-core" cx="210" cy="178" r="8"/>
+                    <circle class="pinwheel-hub-shine" cx="205" cy="173" r="3"/>
+                </g>
+            </svg>
+        `;
+
+        $$(SELECTORS.pinwheels).forEach((pinwheel) => {
+            if (pinwheel.querySelector(".pinwheel-svg")) return;
+            pinwheel.innerHTML = markup;
+        });
+    }
+
+    function initPicnicReturn() {
+        const picnicReturn = $(SELECTORS.picnicReturn);
+        if (!picnicReturn) return;
+
+        const picnicScene = picnicReturn.closest(".picnic-return-scene") || picnicReturn;
+        const cursorSound = new Audio(picnicReturn.dataset.cursorSound || "../SYS_cursor.ogg");
+        const selectSound = new Audio(picnicReturn.dataset.selectSound || "../SYS_select.ogg");
+        let leaving = false;
+        let lastCursorFeedback = 0;
+
+        function playMenuSound(sound) {
+            sound.currentTime = 0;
+            const playPromise = sound.play();
+
+            if (playPromise && typeof playPromise.catch === "function") {
+                playPromise.catch(() => {});
+            }
+        }
+
+        function leaveToMenu() {
+            if (leaving) return;
+
+            leaving = true;
+            picnicReturn.classList.remove("is-cursoring");
+            playMenuSound(selectSound);
+            picnicReturn.classList.add("is-leaving");
+            picnicScene.classList.add("is-leaving");
+
+            window.setTimeout(() => {
+                window.location.href = picnicReturn.dataset.menuUrl || "../index.html";
+            }, 220);
+        }
+
+        function cueCursorFeedback() {
+            if (leaving) return;
+
+            const now = performance.now();
+            if (now - lastCursorFeedback > 120) {
+                playMenuSound(cursorSound);
+                lastCursorFeedback = now;
+            }
+
+            picnicReturn.classList.remove("is-cursoring");
+            void picnicReturn.offsetWidth;
+            picnicReturn.classList.add("is-cursoring");
+        }
+
+        function clearCursorFeedback() {
+            picnicReturn.classList.remove("is-cursoring");
+        }
+
+        listen(picnicReturn, "pointerenter", cueCursorFeedback);
+        listen(picnicReturn, "pointerleave", clearCursorFeedback);
+        listen(picnicReturn, "focus", cueCursorFeedback);
+        listen(picnicReturn, "blur", clearCursorFeedback);
+
+        listen(picnicReturn, "click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            leaveToMenu();
+        });
+    }
+
     function initTextFitting() {
         const initialSize = 18;
         const minSize = 4;
@@ -689,10 +784,12 @@
     }
 
     onReady(() => {
+        initPinwheels();
         initGrass();
         initPortraits();
         initBook();
         initMusic();
+        initPicnicReturn();
         initTextFitting();
         initPreload();
     });

@@ -16,42 +16,17 @@
             </div>
          </div>
       </div>
-      <a class="menu-return" href="../index.html" aria-label="Voltar ao menu">
-         <span>Voltar ao menu</span>
-      </a>
+      <div class="picnic-return-scene">
+         <img class="picnic-return__cloth" src="imgs/picnic_cloth.png" alt="" aria-hidden="true">
+         <button class="picnic-return" type="button" data-menu-url="../index.html" data-cursor-sound="../SYS_cursor.ogg" data-select-sound="../SYS_select.ogg" aria-label="Voltar ao menu">
+            <img class="picnic-return__basket" src="imgs/picnic.png" alt="" aria-hidden="true">
+            <span class="sr-only">Voltar ao menu</span>
+         </button>
+      </div>
 
-	  <svg width="0" height="0" style="position:absolute">
-         <defs>
-            <g id="pinwheel">
-               <rect x="96" y="100" width="8" height="230" rx="4" class="pin-haste"/>
-               <g class="rotate">
-                  <g transform="translate(100,100)">
-                     <path class="blade" d="M0,-8 C40,-8 80,8 90,44 C80,80 40,112 0,112 C-10,78 12,32 0,-8Z"/>
-                     <path class="blade b2" d="M0,-8 C40,-8 80,8 90,44 C80,80 40,112 0,112 C-10,78 12,32 0,-8Z" transform="rotate(90)"/>
-                     <path class="blade b3" d="M0,-8 C40,-8 80,8 90,44 C80,80 40,112 0,112 C-10,78 12,32 0,-8Z" transform="rotate(180)"/>
-                     <path class="blade b4" d="M0,-8 C40,-8 80,8 90,44 C80,80 40,112 0,112 C-10,78 12,32 0,-8Z" transform="rotate(270)"/>
-                     <circle r="14" class="hub-ring"/>
-                     <circle r="7" class="hub-core"/>
-                  </g>
-               </g>
-            </g>
-         </defs>
-      </svg>
-      <div class="pinwheel ace">
-         <svg viewBox="-80 -80 260 360">
-            <use href="#pinwheel"/>
-         </svg>
-      </div>
-      <div class="pinwheel brun">
-         <svg viewBox="-80 -80 260 360">
-            <use href="#pinwheel"/>
-         </svg>
-      </div>
-      <div class="pinwheel berg">
-         <svg viewBox="-80 -80 260 360">
-            <use href="#pinwheel"/>
-         </svg>
-      </div>
+      <div class="pinwheel ace" aria-hidden="true"></div>
+      <div class="pinwheel brun" aria-hidden="true"></div>
+      <div class="pinwheel berg" aria-hidden="true"></div>
       <div class="bg-loop">
          <div class="bg-layer"></div>
          <div class="bg-layer"></div>
