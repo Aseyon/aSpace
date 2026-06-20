@@ -723,9 +723,9 @@ body,
 /* CATA-VENTO */
 .pinwheel {
 	position: fixed;
-	top: 58%;
-	width: clamp(168px, 13vw, 230px);
-	height: clamp(206px, 15.8vw, 282px);
+	bottom: 40px;
+	width: 230px;
+	height: 282px;
 	z-index: 1;
 	pointer-events: none;
 	opacity: 0.98;
@@ -755,15 +755,15 @@ body,
 }
 
 .pinwheel-stick-shadow {
-	fill: var(--pinwheel-stick-shadow, rgba(42, 28, 55, 0.22));
+	fill: rgba(82, 64, 112, 0.16);
 }
 
 .pinwheel-stick {
-	fill: var(--pinwheel-stick, #d6d0e6);
+	fill: #e7e0f6;
 }
 
 .pinwheel-stick-highlight {
-	fill: var(--pinwheel-stick-highlight, rgba(255, 255, 255, 0.42));
+	fill: rgba(255, 255, 255, 0.56);
 }
 
 .pinwheel-rotor {
@@ -786,7 +786,7 @@ body,
 .pinwheel-fold,
 .pinwheel-blade {
 	stroke: var(--pinwheel-outline, rgba(40, 28, 52, 0.24));
-	stroke-width: 3.25;
+	stroke-width: 2.35;
 	stroke-linejoin: round;
 	stroke-linecap: round;
 	vector-effect: non-scaling-stroke;
@@ -801,35 +801,13 @@ body,
 .pinwheel-blade {
 	fill: var(--pinwheel-front, #e72b61);
 	filter:
-		drop-shadow(0.8px 1.3px 0 rgba(42, 24, 64, 0.14))
-		drop-shadow(0 0 4px rgba(255, 255, 255, 0.1));
-}
-
-.pinwheel-texture-mark {
-	fill: none;
-	stroke: var(--pinwheel-texture, rgba(255, 255, 255, 0.38));
-	stroke-width: 1;
-	stroke-linecap: round;
-}
-
-.pinwheel-paper-texture {
-	mix-blend-mode: soft-light;
-	opacity: 0.42;
-	pointer-events: none;
+		drop-shadow(0.6px 1px 0 rgba(42, 24, 64, 0.12))
+		drop-shadow(0 0 3px rgba(255, 255, 255, 0.08));
 }
 
 .pinwheel-center-fill {
 	fill: var(--pinwheel-center, var(--pinwheel-front, #e72b61));
 	opacity: 0.96;
-}
-
-.pinwheel-paper-line {
-	fill: none;
-	stroke: var(--pinwheel-paper-line, rgba(255, 255, 255, 0.36));
-	stroke-width: 2.4;
-	stroke-linecap: round;
-	opacity: 0.82;
-	vector-effect: non-scaling-stroke;
 }
 
 .pinwheel-hub-ring {
@@ -852,45 +830,30 @@ body,
 	--pinwheel-front: #9bddff;
 	--pinwheel-fold: #66c3ee;
 	--pinwheel-center: #7bd2f7;
-	--pinwheel-outline: rgba(41, 93, 128, 0.28);
-	--pinwheel-paper-line: rgba(235, 251, 255, 0.52);
-	--pinwheel-texture: rgba(230, 249, 255, 0.46);
-	--pinwheel-stick: #b7e6f3;
-	--pinwheel-stick-shadow: rgba(45, 93, 119, 0.22);
-	--pinwheel-stick-highlight: rgba(250, 255, 255, 0.5);
+	--pinwheel-outline: #6f28f2;
 	--hub-ring: #f0f5f5;
 	--hub-core: #ffffff;
-	--speed: 12.5s;
+	--speed: 6.5s;
 }
 
 .brun {
 	--pinwheel-front: #ff8fa1;
 	--pinwheel-fold: #e95e75;
 	--pinwheel-center: #f8768d;
-	--pinwheel-outline: rgba(116, 42, 57, 0.28);
-	--pinwheel-paper-line: rgba(255, 235, 239, 0.52);
-	--pinwheel-texture: rgba(255, 231, 237, 0.46);
-	--pinwheel-stick: #ffc0c8;
-	--pinwheel-stick-shadow: rgba(119, 48, 63, 0.22);
-	--pinwheel-stick-highlight: rgba(255, 250, 252, 0.5);
+	--pinwheel-outline: #6f28f2;
 	--hub-ring: #f4f4ef;
 	--hub-core: #fffdf8;
-	--speed: 13.25s;
+	--speed: 7s;
 }
 
 .berg {
 	--pinwheel-front: #514b57;
 	--pinwheel-fold: #2f2b35;
 	--pinwheel-center: #3d3745;
-	--pinwheel-outline: rgba(13, 11, 18, 0.42);
-	--pinwheel-paper-line: rgba(238, 235, 242, 0.3);
-	--pinwheel-texture: rgba(240, 237, 246, 0.26);
-	--pinwheel-stick: #b8b2c3;
-	--pinwheel-stick-shadow: rgba(24, 20, 31, 0.28);
-	--pinwheel-stick-highlight: rgba(255, 255, 255, 0.34);
+	--pinwheel-outline: #6f28f2;
 	--hub-ring: #eeeeee;
 	--hub-core: #fbfbf8;
-	--speed: 14s;
+	--speed: 7.5s;
 }
 
 .page-layout {

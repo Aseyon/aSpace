@@ -62,9 +62,9 @@
         const path = $(SELECTORS.grassPath);
         if (!svg || !path) return;
 
-        const width = 1800;
+        const width = 1600;
         const height = 500;
-        const baseY = 325;
+        const baseY = 390;
         const strands = 60;
         const windRadius = 280;
 
