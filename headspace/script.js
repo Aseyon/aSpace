@@ -518,6 +518,7 @@
         coverBack.style.zIndex = 0;
 
         listen(coverFront, "click", (event) => {
+            startMusic();
             event.stopPropagation();
 
             if (opened) {
@@ -529,6 +530,7 @@
         });
 
         listen(leftNavZone, "click", (event) => {
+            startMusic();
             event.preventDefault();
             event.stopPropagation();
 
@@ -543,6 +545,7 @@
         });
 
         listen(rightNavZone, "click", (event) => {
+            startMusic();
             event.preventDefault();
             event.stopPropagation();
 
@@ -552,6 +555,7 @@
         });
 
         listen(coverBack, "click", (event) => {
+            startMusic();
             event.stopPropagation();
             closeBook();
         });
@@ -609,33 +613,23 @@
 
             musicStarted = true;
             bgm.volume = 0;
-            bgm.load();
+            bgm.muted = false;
             removeStartListeners();
 
-            const play = () => {
-                bgm.removeEventListener("canplaythrough", play);
+            const playPromise = bgm.play();
 
-                const playPromise = bgm.play();
-
-                if (!playPromise || typeof playPromise.then !== "function") {
-                    fadeIn();
-                    return;
-                }
-
-                playPromise
-                    .then(fadeIn)
-                    .catch((error) => {
-                        console.warn("Falha ao iniciar a musica:", error);
-                        musicStarted = false;
-                        addStartListeners();
-                    });
-            };
-
-            if (bgm.readyState >= 3) {
-                play();
-            } else {
-                bgm.addEventListener("canplaythrough", play, { once: true });
+            if (!playPromise || typeof playPromise.then !== "function") {
+                fadeIn();
+                return;
             }
+
+            playPromise
+                .then(fadeIn)
+                .catch((error) => {
+                    console.warn("Falha ao iniciar a musica:", error);
+                    musicStarted = false;
+                    addStartListeners();
+                });
         };
 
         addStartListeners();
