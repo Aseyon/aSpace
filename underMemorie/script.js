@@ -813,7 +813,7 @@ function confirmReturnToMenu() {
     const text = "* Voltar para o menu.";
 
     const span = document.createElement("span");
-    span.className = "memory-option";
+    span.className = "memory-option return-menu-option";
     span.style.cursor = "pointer";
     span.style.display = "block";
     span.style.marginTop = "10px";
@@ -905,7 +905,7 @@ function selectOption(opt) {
 
     } else if (opt.classList.contains("intro")) {
         sansHead.src = "imgs/sans_close.png";
-        typeText("* acho que tá meio óbvio. página inspirada em Undertale.\n* dito isso, só fica a vontade.", () => {
+        typeText("* Essa página foi feita com o intuito de ser uma galeria das minhas memórias.\n* Eu fiz essa versão alternativa p eu conseguir acessar de qualquer dispositivo.", () => {
             sansHead.src = "imgs/sans_head.png";
         });
 
