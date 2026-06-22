@@ -153,6 +153,13 @@
         const overlay = $(SELECTORS.overlay);
         if (!portraits.length || !overlay) return;
 
+        const hoverProperties = [
+            "--paper-peel-x",
+            "--paper-peel-y",
+            "--paper-peel-rotate",
+            "--photo-peel-rotate"
+        ];
+
         function truncateCaption(caption) {
             const fullText = caption.dataset.fulltext || caption.textContent.trim();
             caption.textContent = fullText.length > PORTRAIT_CAPTION_MAX_CHARS
@@ -163,11 +170,15 @@
         function updateSupport(wrapper, support, tape) {
             if (!wrapper || !support) return;
 
-            const paddingX = 12;
-            const paddingY = 12;
+            const portrait = wrapper.closest(SELECTORS.portraits);
+            const isZoomed = portrait?.classList.contains("zoomed");
+            const paddingX = isZoomed ? 18 : 12;
+            const paddingY = isZoomed ? 18 : 12;
+            const supportWidth = wrapper.offsetWidth;
+            const supportHeight = wrapper.offsetHeight;
 
-            support.style.width = `${wrapper.offsetWidth + paddingX * 2}px`;
-            support.style.height = `${wrapper.offsetHeight + paddingY * 2}px`;
+            support.style.width = `${supportWidth + paddingX * 2}px`;
+            support.style.height = `${supportHeight + paddingY * 2}px`;
             support.style.top = `${wrapper.offsetTop - paddingY}px`;
             support.style.left = `${wrapper.offsetLeft - paddingX}px`;
             support.style.zIndex = 10;
@@ -189,6 +200,83 @@
             };
         }
 
+        function clamp(value, min, max) {
+            return Math.min(Math.max(value, min), max);
+        }
+
+        function setOpenMotionStart(portrait, closedRect) {
+            const closedCenterX = closedRect.left + closedRect.width / 2;
+            const closedCenterY = closedRect.top + closedRect.height / 2;
+
+            portrait.style.setProperty("--open-drag-x", `${closedCenterX - window.innerWidth / 2}px`);
+            portrait.style.setProperty("--open-drag-y", `${closedCenterY - window.innerHeight / 2}px`);
+            portrait.style.setProperty("--open-scale", "0.52");
+        }
+
+        function playOpenMotion(portrait) {
+            requestAnimationFrame(() => {
+                portrait.style.setProperty("--open-drag-x", "0px");
+                portrait.style.setProperty("--open-drag-y", "0px");
+                portrait.style.setProperty("--open-scale", "1");
+            });
+        }
+
+        function clearOpenMotion(portrait) {
+            portrait.style.removeProperty("--open-drag-x");
+            portrait.style.removeProperty("--open-drag-y");
+            portrait.style.removeProperty("--open-scale");
+        }
+
+        function updatePortraitHover(portrait, event) {
+            if (portrait.classList.contains("zoomed")) return;
+
+            const { support } = getPortraitParts(portrait);
+            const rect = (support || portrait).getBoundingClientRect();
+            if (!rect.width || !rect.height) return;
+
+            const x = clamp(((event.clientX - rect.left) / rect.width - 0.5) * 2, -1, 1);
+            const y = clamp(((event.clientY - rect.top) / rect.height - 0.5) * 2, -1, 1);
+            const tilt = x * 1.4;
+
+            portrait.style.setProperty("--paper-peel-x", `${x * 3}px`);
+            portrait.style.setProperty("--paper-peel-y", `${5 + y * 1.2}px`);
+            portrait.style.setProperty("--paper-peel-rotate", `${tilt}deg`);
+            portrait.style.setProperty("--photo-peel-rotate", `${tilt * 0.75}deg`);
+        }
+
+        function clearPortraitHover(portrait) {
+            hoverProperties.forEach((property) => {
+                portrait.style.removeProperty(property);
+            });
+        }
+
+        function removeLeftBehindTape(portrait) {
+            if (!portrait || !portrait.leftBehindTape) return;
+
+            portrait.leftBehindTape.remove();
+            portrait.leftBehindTape = null;
+        }
+
+        function leaveTapeBehind(portrait, tape) {
+            removeLeftBehindTape(portrait);
+            if (!tape) return;
+
+            const rect = tape.getBoundingClientRect();
+            const clone = tape.cloneNode(true);
+
+            clone.classList.add("tape-left-behind");
+            clone.setAttribute("aria-hidden", "true");
+            Object.assign(clone.style, {
+                top: `${rect.top}px`,
+                left: `${rect.left}px`,
+                width: `${rect.width}px`,
+                height: `${rect.height}px`
+            });
+
+            document.body.appendChild(clone);
+            portrait.leftBehindTape = clone;
+        }
+
         function updateAllSupports() {
             portraits.forEach((portrait) => {
                 const { wrapper, support, tape } = getPortraitParts(portrait);
@@ -196,12 +284,27 @@
             });
         }
 
+        function scheduleSupportUpdate(portrait) {
+            const { wrapper, support, tape } = getPortraitParts(portrait);
+
+            updateSupport(wrapper, support, tape);
+            requestAnimationFrame(() => {
+                updateSupport(wrapper, support, tape);
+                requestAnimationFrame(() => updateSupport(wrapper, support, tape));
+            });
+            window.setTimeout(() => updateSupport(wrapper, support, tape), 120);
+        }
+
         function showOverlay() {
+            overlay.classList.add("is-visible");
+            overlay.setAttribute("aria-hidden", "false");
             overlay.style.opacity = "1";
             overlay.style.pointerEvents = "auto";
         }
 
         function hideOverlay() {
+            overlay.classList.remove("is-visible");
+            overlay.setAttribute("aria-hidden", "true");
             overlay.style.opacity = "0";
             overlay.style.pointerEvents = "none";
         }
@@ -212,9 +315,13 @@
 
             const { wrapper, support, tape, caption } = getPortraitParts(portrait);
 
+            removeLeftBehindTape(portrait);
             portrait.classList.remove("zoomed");
+            portrait.classList.remove("has-long-caption");
             portrait.style.transform = "";
             portrait.style.zIndex = "";
+            clearOpenMotion(portrait);
+            clearPortraitHover(portrait);
 
             if (caption) truncateCaption(caption);
 
@@ -230,28 +337,25 @@
             const { wrapper, support, tape, caption } = getPortraitParts(portrait);
             if (!wrapper) return;
 
+            clearPortraitHover(portrait);
+            const closedRect = portrait.getBoundingClientRect();
+
             if (caption) {
                 caption.textContent = caption.dataset.fulltext || caption.textContent;
                 caption.style.height = "auto";
                 caption.style.maxHeight = "none";
+                portrait.classList.toggle("has-long-caption", caption.textContent.trim().length > 140);
             }
 
-            portrait.style.transform = "none";
-            portrait.style.zIndex = "";
-
-            const rect = wrapper.getBoundingClientRect();
-            const scaleX = (window.innerWidth * 0.9) / rect.width;
-            const scaleY = (window.innerHeight * 0.9) / rect.height;
-            const maxScale = Math.min(scaleX, scaleY, 2.2);
-            const centerX = window.innerWidth / 2 - (rect.left + rect.width / 2);
-            const centerY = window.innerHeight / 2 - (rect.top + rect.height / 2);
-
-            portrait.style.transform = `translate(${centerX}px, ${centerY}px) scale(${maxScale})`;
-            portrait.style.zIndex = 70;
+            updateSupport(wrapper, support, tape);
+            leaveTapeBehind(portrait, tape);
+            setOpenMotionStart(portrait, closedRect);
             portrait.classList.add("zoomed");
+            portrait.style.zIndex = 70;
 
             showOverlay();
-            updateSupport(wrapper, support, tape);
+            playOpenMotion(portrait);
+            scheduleSupportUpdate(portrait);
         }
 
         portraits.forEach((portrait) => {
@@ -261,6 +365,10 @@
                 caption.dataset.fulltext = caption.textContent.trim();
                 truncateCaption(caption);
             }
+
+            listen(portrait, "pointermove", (event) => updatePortraitHover(portrait, event));
+            listen(portrait, "pointerleave", () => clearPortraitHover(portrait));
+            listen(portrait, "pointercancel", () => clearPortraitHover(portrait));
 
             listen(portrait, "click", (event) => {
                 startMusic();

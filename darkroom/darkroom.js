@@ -194,6 +194,8 @@ nikoSleep.src = "imgs/nikosleep.gif";
 
 let videoOpen = false;
 let currentVideo = null;
+let tutorialOpen = false;
+let loadingFinished = false;
 
 window.addEventListener("keydown", e => {
     if (e.key.toLowerCase() === "x" && videoOpen) {
@@ -351,7 +353,25 @@ const obj_bed = {
 };
 
 const keys = {};
-window.addEventListener("keydown", e => keys[e.key] = true);
+let stepTimer = 0;
+let firstStep = true;
+const movementKeys = new Set(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
+
+function clearMovementKeys() {
+    movementKeys.forEach(key => keys[key] = false);
+    stepTimer = 0;
+    firstStep = true;
+}
+
+window.addEventListener("keydown", e => {
+    if (tutorialOpen && movementKeys.has(e.key)) {
+        e.preventDefault();
+        keys[e.key] = false;
+        return;
+    }
+
+    keys[e.key] = true;
+});
 window.addEventListener("keyup", e => keys[e.key] = false);
 
 const sprites = {
@@ -410,9 +430,6 @@ sprites.right.idle = load("imgs/Niko_Idle_Right.png", spriteLoaded);
 ["Right1", "Right2", "Right3"].forEach(f =>
     sprites.right.run.push(load(`imgs/Niko_${f}.png`, spriteLoaded))
 );
-
-let stepTimer = 0;
-let firstStep = true;
 
 function playStep() {
     const step = steps[stepIndex];
@@ -499,7 +516,7 @@ for (let i = 0; i < 200; i++) {
 }
 
 function checkMP4Interaction() {
-    if (videoOpen) return;
+    if (videoOpen || tutorialOpen) return;
 
     const hitY = -60;
     const extraH = 30;
@@ -530,8 +547,9 @@ function checkMP4Interaction() {
 }
 
 function update() {
-    if (videoOpen || obj_bed.confirming || obj_bed.confirmed) {
+    if (tutorialOpen || videoOpen || obj_bed.confirming || obj_bed.confirmed) {
         niko.locked = true;
+        if (tutorialOpen) clearMovementKeys();
         return;
     } else {
         niko.locked = false;
@@ -590,8 +608,10 @@ function update() {
             (dx > 0 ? "right" : "left") :
             (dy > 0 ? "down" : "up");
 
+        const frameDelay = niko.direction === "up" || niko.direction === "down" ? 18 : 15;
+
         niko.timer++;
-        if (niko.timer > 15) {
+        if (niko.timer > frameDelay) {
             niko.frame = (niko.frame + 1) % 3;
             niko.timer = 0;
         }
@@ -762,6 +782,7 @@ const messageBoxSound = new Audio("pc_messagebox.wav");
 messageBoxSound.volume = 0.5;
 
 function checkBedInteraction() {
+    if (tutorialOpen) return;
     if (!obj_bed.interactable || obj_bed.interacting) return;
     if (obj_bed.confirming || obj_bed.confirmed) return;
 
@@ -966,8 +987,6 @@ function startGame() {
 }
 
 let fakeProgress = 0;
-let tutorialOpen = false;
-let loadingFinished = false;
 
 function drawLoading(progress) {
     const grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -1084,6 +1103,7 @@ function showTutorial() {
     });
 
     tutorialOpen = true;
+    clearMovementKeys();
 }
 
 window.addEventListener("keydown", e => {

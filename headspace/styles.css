@@ -317,6 +317,10 @@ body::after {
 }
 
 .portrait-container {
+	--paper-peel-x: 1px;
+	--paper-peel-y: 5px;
+	--paper-peel-rotate: -1deg;
+	--photo-peel-rotate: 0.65deg;
 	position: absolute;
 	top: 100px;
 	left: 100px;
@@ -327,10 +331,17 @@ body::after {
 	cursor: pointer;
 	overflow: visible;
 	z-index: 0;
-	transition: transform 0.4s ease;
+	transform-origin: 50% 10px;
+	transition:
+		transform 0.34s cubic-bezier(.2, .9, .25, 1.25),
+		filter 0.28s ease;
+	will-change: transform;
 }
 
 #portrait2 {
+	--paper-peel-x: -1px;
+	--paper-peel-rotate: 0.9deg;
+	--photo-peel-rotate: -0.6deg;
 	position: absolute;
 	top: 40%;
 	left: 25%;
@@ -341,7 +352,35 @@ body::after {
 	cursor: pointer;
 	overflow: visible;
 	z-index: 0;
-	transition: transform 0.4s ease;
+	transition:
+		transform 0.34s cubic-bezier(.2, .9, .25, 1.25),
+		filter 0.28s ease;
+}
+
+#overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 60;
+	background: rgba(0, 0, 0, 0.68);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.28s ease;
+	backdrop-filter: blur(1px);
+}
+
+#overlay.is-visible {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.photo-wrapper {
+	position: relative;
+	z-index: 30;
+	transform-origin: 50% 0;
+	transition:
+		transform 0.34s cubic-bezier(.2, .9, .25, 1.25),
+		filter 0.28s ease;
+	will-change: transform;
 }
 
 .photo-support {
@@ -359,6 +398,12 @@ body::after {
 	box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 0 4px 6px rgba(0, 0, 0, 0.15) inset;
 	z-index: 10;
 	filter: contrast(1.05) brightness(1.03);
+	transform-origin: 50% 0;
+	transition:
+		transform 0.34s cubic-bezier(.2, .9, .25, 1.25),
+		box-shadow 0.3s ease,
+		filter 0.3s ease;
+	will-change: transform;
 }
 
 .tape-realista {
@@ -371,8 +416,50 @@ body::after {
 	border-radius: 4px;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.35), inset 0 -1px 1px rgba(0, 0, 0, 0.25);
 	transform: rotate(-2deg);
+	transform-origin: 50% 50%;
 	clip-path: polygon(0 0, 100% 0, 90% 100%, 10% 100%);
 	z-index: 25;
+	transition:
+		box-shadow 0.28s ease,
+		filter 0.28s ease;
+}
+
+.tape-realista::before,
+.tape-realista::after {
+	content: "";
+	position: absolute;
+	pointer-events: none;
+}
+
+.tape-realista::before {
+	inset: 0;
+	border-radius: inherit;
+	background:
+		repeating-linear-gradient(90deg,
+			rgba(255, 255, 255, 0.18) 0 1px,
+			transparent 1px 7px),
+		linear-gradient(90deg,
+			rgba(255, 255, 255, 0.22),
+			transparent 32%,
+			rgba(83, 52, 0, 0.13));
+	opacity: 0.55;
+	mix-blend-mode: screen;
+}
+
+.tape-realista::after {
+	display: none;
+	right: 9%;
+	bottom: -4px;
+	width: 42%;
+	height: 5px;
+	border-radius: 999px;
+	background: rgba(0, 0, 0, 0.28);
+	filter: blur(4px);
+	opacity: 0;
+	transform: translateY(2px);
+	transition:
+		opacity 0.28s ease,
+		transform 0.28s ease;
 }
 
 .photo-square {
@@ -384,7 +471,9 @@ body::after {
 	background: transparent;
 	z-index: 60;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 0 0 2px rgba(255, 255, 255, 0.05);
-	transition: box-shadow 0.3s ease;
+	transition:
+		transform 0.34s cubic-bezier(.2, .9, .25, 1.25),
+		box-shadow 0.3s ease;
 }
 
 .photo-square img {
@@ -467,22 +556,132 @@ body,
 	border: 2px solid #fff;
 	z-index: 0;
 	pointer-events: none;
+	opacity: 0;
+	transition: opacity 0.24s ease;
 }
 
 /* =======================
    ZOOM
 ======================= */
 .portrait-container.zoomed {
-	transform: rotate(0deg) scale(var(--zoom, 1));
-	z-index: 70;
-	transition: transform 0.4s ease;
+	--open-drag-x: 0px;
+	--open-drag-y: 0px;
+	--open-scale: 1;
+	--open-portrait-width: clamp(330px, 42vmin, 420px);
+	--open-photo-ratio: 4 / 5;
+	--open-paper-padding: 18px;
+	position: fixed !important;
+	top: 50% !important;
+	left: 50% !important;
+	width: var(--open-portrait-width) !important;
+	max-width: 92vw;
+	max-height: 88vh;
+	transform:
+		translate(calc(-50% + var(--open-drag-x)), calc(-50% + var(--open-drag-y)))
+		scale(var(--open-scale)) !important;
+	transform-origin: center center;
+	z-index: 70 !important;
+	cursor: zoom-out;
+	transition:
+		transform 0.48s cubic-bezier(.18, .9, .22, 1),
+		width 0.34s ease,
+		filter 0.28s ease;
+}
+
+.portrait-container.zoomed .photo-wrapper {
+	width: 100%;
+	max-height: none;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 16px;
+	padding: 0;
+	transform: none;
+}
+
+.portrait-container.zoomed .photo-support {
+	top: calc(var(--open-paper-padding) * -1) !important;
+	right: calc(var(--open-paper-padding) * -1) !important;
+	bottom: calc(var(--open-paper-padding) * -1) !important;
+	left: calc(var(--open-paper-padding) * -1) !important;
+	width: auto !important;
+	height: auto !important;
+	transform: none;
+	box-shadow:
+		0 22px 44px rgba(0, 0, 0, 0.46),
+		0 5px 8px rgba(0, 0, 0, 0.16) inset;
+}
+
+.portrait-container.zoomed .tape-realista {
+	opacity: 0;
+	pointer-events: none;
+	filter: brightness(1.05) saturate(1.04);
+	box-shadow:
+		0 2px 4px rgba(0, 0, 0, 0.34),
+		inset 0 1px 1px rgba(255, 255, 255, 0.38),
+		inset 0 -1px 1px rgba(0, 0, 0, 0.24);
+	transform: rotate(-2deg);
+}
+
+.tape-left-behind {
+	position: fixed;
+	z-index: 61;
+	pointer-events: none;
+	opacity: 0.92;
+	transform: rotate(-2deg);
+	filter: brightness(1.03) saturate(1.03);
+	box-shadow:
+		0 2px 4px rgba(0, 0, 0, 0.36),
+		inset 0 1px 1px rgba(255, 255, 255, 0.42),
+		inset 0 -1px 1px rgba(0, 0, 0, 0.22);
+	animation: tape-left-behind-settle 0.26s cubic-bezier(.2, .9, .25, 1.2);
+}
+
+@keyframes tape-left-behind-settle {
+	from {
+		transform: translateY(-2px) rotate(-4deg);
+		opacity: 0.45;
+	}
+
+	to {
+		transform: translateY(0) rotate(-2deg);
+		opacity: 0.92;
+	}
+}
+
+.portrait-container.zoomed.has-long-caption {
+	--open-portrait-width: clamp(360px, 45vmin, 450px);
+	--open-photo-ratio: 5 / 6;
+}
+
+.portrait-container.zoomed .wrap-black,
+.portrait-container.zoomed .wrap-white {
+	width: 100%;
+	min-width: 0;
+	height: auto;
+	display: block;
+}
+
+.portrait-container.zoomed .wrap-black::before,
+.portrait-container.zoomed .wrap-white::before {
+	opacity: 1;
 }
 
 .portrait-container.zoomed .caption-box {
 	opacity: 1;
 	pointer-events: auto;
-	max-height: none;
+	top: 0;
+	width: 100%;
+	min-width: 0;
+	max-width: none;
+	max-height: min(21vh, 150px);
+	display: block;
+	overflow-y: auto;
 	white-space: normal;
+	align-self: auto;
+	font-size: clamp(17px, 2vw, 22px);
+	line-height: 1.18;
+	padding: 7px 10px;
 }
 
 .photo-square {
@@ -497,7 +696,9 @@ body,
 		4px 6px 12px rgba(0, 0, 0, 0.35),
 		0 0 0 2px rgba(255, 255, 255, 0.03),
 		inset 0 1px 2px rgba(255, 255, 255, 0.15);
-	transition: box-shadow 0.3s ease;
+	transition:
+		transform 0.34s cubic-bezier(.2, .9, .25, 1.25),
+		box-shadow 0.3s ease;
 }
 
 .photo-square img {
@@ -510,10 +711,97 @@ body,
 }
 
 .portrait-container.zoomed .photo-square {
+	width: 100%;
+	aspect-ratio: var(--open-photo-ratio);
+	height: auto !important;
+	max-height: 42vh;
+	flex: 0 0 auto;
+	overflow: hidden;
 	box-shadow:
 		8px 12px 24px rgba(0, 0, 0, 0.45),
 		0 0 0 2px rgba(255, 255, 255, 0.03),
 		inset 0 2px 4px rgba(255, 255, 255, 0.15);
+}
+
+.portrait-container.zoomed .photo-square img {
+	width: 100%;
+	height: 100%;
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.portrait-container:not(.zoomed):hover {
+		z-index: 65;
+		filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.25));
+	}
+
+	.portrait-container:not(.zoomed):hover .photo-wrapper {
+		transform:
+			translate3d(var(--paper-peel-x), var(--paper-peel-y), 0)
+			rotate(var(--photo-peel-rotate));
+	}
+
+	.portrait-container:not(.zoomed):hover .photo-support {
+		filter: contrast(1.08) brightness(1.05);
+		box-shadow:
+			0 18px 30px rgba(0, 0, 0, 0.38),
+			0 5px 8px rgba(0, 0, 0, 0.16) inset;
+		transform:
+			translate3d(var(--paper-peel-x), var(--paper-peel-y), 0)
+			rotate(var(--paper-peel-rotate));
+	}
+
+	.portrait-container:not(.zoomed):hover .tape-realista {
+		box-shadow:
+			0 2px 4px rgba(0, 0, 0, 0.36),
+			inset 0 1px 1px rgba(255, 255, 255, 0.42),
+			inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+		filter: brightness(1.06) saturate(1.05);
+		transform: rotate(-2deg);
+	}
+
+	.portrait-container:not(.zoomed):hover .photo-square {
+		box-shadow:
+			7px 10px 18px rgba(0, 0, 0, 0.4),
+			0 0 0 2px rgba(255, 255, 255, 0.05),
+			inset 0 1px 2px rgba(255, 255, 255, 0.15);
+	}
+}
+
+@media (max-width: 680px) {
+	.portrait-container.zoomed {
+		--open-portrait-width: min(82vw, 360px);
+		--open-paper-padding: 14px;
+	}
+
+	.portrait-container.zoomed.has-long-caption {
+		--open-portrait-width: min(86vw, 390px);
+		--open-photo-ratio: 5 / 6;
+	}
+
+	.portrait-container.zoomed .photo-wrapper {
+		gap: 4px;
+		max-height: none;
+	}
+
+	.portrait-container.zoomed .caption-box {
+		max-height: min(26vh, 190px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.portrait-container,
+	.photo-wrapper,
+	.photo-support,
+	.tape-realista,
+	.tape-realista::after,
+	.photo-square,
+	#overlay {
+		transition-duration: 0.01ms;
+	}
 }
 
 /* livro */
@@ -1572,7 +1860,7 @@ html.loading * {
 	position: fixed;
 	top: calc(50% - clamp(20px, 3vw, 42px));
 	right: clamp(170px, 18vw, 320px);
-	z-index: 9000;
+	z-index: 1;
 	width: clamp(138px, 12vw, 196px);
 	height: clamp(112px, 10vw, 164px);
 	padding: 0;
@@ -1616,7 +1904,7 @@ html.loading * {
 	position: absolute;
 	left: 50%;
 	bottom: 34%;
-	z-index: 2;
+	z-index: 1;
 	width: 36%;
 	aspect-ratio: 26 / 32;
 	padding: 0;
