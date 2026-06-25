@@ -41,7 +41,7 @@ const videos = [
     id: 'case_07',
     title: 'Parque de Dinossauros II',
     file: 'mineDino.mp4',
-    description: 'Registros mostram nascimento de dinoussauro antes extinto. Dolores foi concebida ao mundo como primeira fêmea a nascer em solo Minecraftense.'
+    description: 'Registros mostram nascimento de dinoussauro antes extintos. Dolores foi concebida ao mundo como primeira fêmea a nascer em solo Minecraftense.'
   },
   {
     id: 'case_08',
@@ -53,7 +53,7 @@ const videos = [
     id: 'case_09',
     title: 'Massacre Escolar',
     file: 'massacre_escolar.mp4',
-    description: 'Registro forte mostram imagens reais de massacre escolar em joguinho virtual. É acrescentado intenções assassinas ao final ser revelado verdadeira razão para esfaqueamento em ROBLOX - Massacre.'
+    description: 'Registros fortes mostram imagens reais de massacre escolar em joguinho virtual. É acrescentado intenções assassinas ao final ser revelado verdadeira razão para esfaqueamento em ROBLOX - Massacre.'
   },
   {
     id: 'case_10',

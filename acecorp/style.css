@@ -2,6 +2,7 @@
 *::before,
 *::after {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html {
@@ -33,6 +34,13 @@ a {
 button,
 video {
   font: inherit;
+}
+
+a,
+button,
+.project-row,
+[role="button"] {
+  outline: none;
 }
 
 .screen-noise,
@@ -135,6 +143,8 @@ video {
 }
 
 .terminal-nav a:hover,
+.terminal-nav a:active,
+.terminal-nav a:focus,
 .terminal-nav a:focus-visible {
   color: #e50914;
   outline: none;
@@ -157,6 +167,8 @@ video {
 }
 
 .menu-return:hover,
+.menu-return:active,
+.menu-return:focus,
 .menu-return:focus-visible {
   border-color: #f2f2f2 !important;
   color: #f2f2f2 !important;
@@ -271,6 +283,8 @@ h1 {
 }
 
 .project-row:hover,
+.project-row:active,
+.project-row:focus,
 .project-row:focus-visible {
   background: #f2f2f2;
   color: #050505;
@@ -278,8 +292,12 @@ h1 {
 }
 
 .project-row:hover .project-desc,
+.project-row:active .project-desc,
+.project-row:focus .project-desc,
 .project-row:focus-visible .project-desc,
 .project-row:hover .project-meta,
+.project-row:active .project-meta,
+.project-row:focus .project-meta,
 .project-row:focus-visible .project-meta {
   color: #262626;
 }
@@ -403,6 +421,8 @@ h1 {
 }
 
 .modal-close:hover,
+.modal-close:active,
+.modal-close:focus,
 .modal-close:focus-visible {
   border-color: #e50914;
   color: #e50914;
