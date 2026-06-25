@@ -15,8 +15,8 @@ const routes = {
     },
     darkroom: {
         desktop: "darkroom/darkroom.html",
-        mobile: "lionMane/index.html",
-        mobileLabel: "LION'S MANE"
+        mobile: "acecorp/index.html",
+        mobileLabel: "ACE CORP"
     }
 };
 

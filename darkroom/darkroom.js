@@ -54,7 +54,7 @@ let stepIndex = 0;
 const mp4Icons = [{
         x: 150,
         y: 150,
-        video: "vds/darkhours.mp4",
+        video: "../vds/darkhours.mp4",
         width: 48,
         height: 48,
         activated: false,
@@ -65,7 +65,7 @@ const mp4Icons = [{
     {
         x: 600,
         y: 120,
-        video: "vds/contentwarning1.mp4",
+        video: "../vds/contentwarning1.mp4",
         width: 48,
         height: 48,
         activated: false,
@@ -76,7 +76,7 @@ const mp4Icons = [{
     {
         x: 1100,
         y: 200,
-        video: "vds/mineDino.mp4",
+        video: "../vds/mineDino.mp4",
         width: 48,
         height: 48,
         activated: false,
@@ -87,7 +87,7 @@ const mp4Icons = [{
     {
         x: 1700,
         y: 180,
-        video: "vds/repo.mp4",
+        video: "../vds/repo.mp4",
         width: 48,
         height: 48,
         activated: false,
@@ -98,7 +98,7 @@ const mp4Icons = [{
     {
         x: 300,
         y: 500,
-        video: "vds/lockedsouls.mp4",
+        video: "../vds/lockedsouls.mp4",
         width: 48,
         height: 48,
         activated: false,
@@ -109,7 +109,7 @@ const mp4Icons = [{
     {
         x: 900,
         y: 550,
-        video: "vds/contentwarning2.mp4",
+        video: "../vds/contentwarning2.mp4",
         width: 48,
         height: 48,
         activated: false,
@@ -120,7 +120,7 @@ const mp4Icons = [{
     {
         x: 1500,
         y: 600,
-        video: "vds/minePark1.mp4",
+        video: "../vds/minePark1.mp4",
         width: 48,
         height: 48,
         activated: false,
@@ -131,7 +131,7 @@ const mp4Icons = [{
     {
         x: 200,
         y: 850,
-        video: "vds/blackops2_1.mp4",
+        video: "../vds/blackops2_1.mp4",
         width: 48,
         height: 48,
         activated: false,
@@ -142,7 +142,7 @@ const mp4Icons = [{
     {
         x: 1000,
         y: 900,
-        video: "vds/massacre_escolar.mp4",
+        video: "../vds/massacre_escolar.mp4",
         width: 48,
         height: 48,
         activated: false,
@@ -153,7 +153,7 @@ const mp4Icons = [{
     {
         x: 1800,
         y: 850,
-        video: "vds/fnaf.mp4",
+        video: "../vds/fnaf.mp4",
         width: 48,
         height: 48,
         activated: false,
@@ -164,7 +164,7 @@ const mp4Icons = [{
     {
         x: 2300,
         y: 900,
-        video: "vds/99apocalipse.mp4",
+        video: "../vds/99apocalipse.mp4",
         width: 48,
         height: 48,
         activated: false,
@@ -175,7 +175,7 @@ const mp4Icons = [{
     {
         x: 2500,
         y: 400,
-        video: "vds/cartas.mp4",
+        video: "../vds/cartas.mp4",
         width: 48,
         height: 48,
         activated: false,
