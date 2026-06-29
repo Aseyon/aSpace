@@ -98,11 +98,21 @@ function renderVideos() {
   `).join('');
 
   projectList.querySelectorAll('.project-row').forEach(row => {
-    row.addEventListener('click', () => openVideo(Number(row.dataset.index)));
+    const flashAndOpen = () => {
+      if (row.classList.contains('is-clicked')) return;
+
+      row.classList.add('is-clicked');
+      window.setTimeout(() => {
+        row.classList.remove('is-clicked');
+        openVideo(Number(row.dataset.index));
+      }, 140);
+    };
+
+    row.addEventListener('click', flashAndOpen);
     row.addEventListener('keydown', event => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        openVideo(Number(row.dataset.index));
+        flashAndOpen();
       }
     });
 

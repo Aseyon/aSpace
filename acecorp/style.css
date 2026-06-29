@@ -283,8 +283,7 @@ h1 {
 }
 
 .project-row:hover,
-.project-row:active,
-.project-row:focus,
+.project-row.is-clicked,
 .project-row:focus-visible {
   background: #f2f2f2;
   color: #050505;
@@ -292,12 +291,10 @@ h1 {
 }
 
 .project-row:hover .project-desc,
-.project-row:active .project-desc,
-.project-row:focus .project-desc,
+.project-row.is-clicked .project-desc,
 .project-row:focus-visible .project-desc,
 .project-row:hover .project-meta,
-.project-row:active .project-meta,
-.project-row:focus .project-meta,
+.project-row.is-clicked .project-meta,
 .project-row:focus-visible .project-meta {
   color: #262626;
 }
