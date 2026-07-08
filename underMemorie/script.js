@@ -68,7 +68,7 @@ function updateSelection() {
 options.forEach(opt => opt.setAttribute("data-text", opt.textContent));
 updateSelection();
 
-const memories = ["bk", "anime", "princess", "quack", "yt", "wit", "back", "rblx", "truth", "tranzit", "dntstarve", "rrpo", "rof2", "camping", "skyBO2", "F99n", "MASSACRE", "inferiores", "revo", "bathroom", "FNAFROBLOX", "monstros", "sinistro", "aura", "badtimetrio", "jogoruim", "legendsneverdie",  "navio", "protagonista", "rango", "sonic"];
+const memories = ["bk", "anime", "princess", "quack", "yt", "wit", "back", "rblx", "truth", "tranzit", "dntstarve", "rrpo", "rof2", "camping", "skyBO2", "F99n", "MASSACRE", "inferiores", "revo", "bathroom", "FNAFROBLOX", "monstros", "sinistro", "aura", "badtimetrio", "jogoruim", "BOneverdie",  "navio", "prota", "rango", "sonic"];
 let currentMemoryPage = 0;
 const memoriesPerPage = 6;
 let memTypingTimeouts = [];
@@ -322,6 +322,161 @@ function renderMemoryPage() {
 }
 
 let menuLocked = false;
+let returnBattlePreloading = false;
+
+const RETURN_BATTLE_ASSETS = {
+    images: [
+        "imgs/sans_menu.png",
+        "imgs/heart.png",
+        "imgs/dragonskull1.png",
+        "imgs/dragonskull2.png",
+        "imgs/dragonskull3.png",
+        "imgs/dragonskull4.png",
+        "imgs/dragonskull5.png",
+        "imgs/dragonskull6.png",
+        "imgs/broken_heart.png",
+        "imgs/heart_debris1.png",
+        "imgs/heart_debris2.png",
+        "imgs/heart_debris3.png",
+        "imgs/heart_debris4.png"
+    ],
+    audio: [
+        "snd_spearappear.wav",
+        "mus_sfx_rainbowbeam_1.wav",
+        "snd_break1_c.wav",
+        "snd_break2_c.wav"
+    ]
+};
+
+const preloadedBattleImages = new Map();
+const preloadedBattleAudio = new Map();
+let returnBattleAssetsPromise = null;
+
+function preloadImageAsset(src) {
+    const cached = preloadedBattleImages.get(src);
+    if (cached && cached.complete && cached.naturalWidth > 0) {
+        return Promise.resolve(cached);
+    }
+
+    return new Promise((resolve, reject) => {
+        const img = cached || new Image();
+        preloadedBattleImages.set(src, img);
+
+        const finish = () => {
+            cleanup();
+            resolve(img);
+        };
+        const fail = () => {
+            cleanup();
+            reject(new Error(`Falha ao carregar imagem: ${src}`));
+        };
+        const cleanup = () => {
+            img.removeEventListener("load", finish);
+            img.removeEventListener("error", fail);
+        };
+
+        img.addEventListener("load", finish, { once: true });
+        img.addEventListener("error", fail, { once: true });
+
+        if (!cached) img.src = src;
+        if (img.complete) {
+            img.naturalWidth > 0 ? finish() : fail();
+        }
+    });
+}
+
+function preloadAudioAsset(src) {
+    const cached = preloadedBattleAudio.get(src);
+    if (cached && cached.readyState >= 2) {
+        return Promise.resolve(cached);
+    }
+
+    return new Promise((resolve, reject) => {
+        const audio = cached || new Audio();
+        preloadedBattleAudio.set(src, audio);
+
+        const finish = () => {
+            cleanup();
+            resolve(audio);
+        };
+        const fail = () => {
+            cleanup();
+            reject(new Error(`Falha ao carregar audio: ${src}`));
+        };
+        const cleanup = () => {
+            clearTimeout(timeout);
+            audio.removeEventListener("canplaythrough", finish);
+            audio.removeEventListener("loadeddata", finish);
+            audio.removeEventListener("error", fail);
+        };
+        const timeout = setTimeout(finish, 10000);
+
+        audio.preload = "auto";
+        audio.addEventListener("canplaythrough", finish, { once: true });
+        audio.addEventListener("loadeddata", finish, { once: true });
+        audio.addEventListener("error", fail, { once: true });
+
+        if (!cached) audio.src = src;
+        audio.load();
+
+        if (audio.readyState >= 2) finish();
+    });
+}
+
+function updateReturnBattleLoading(loaded, total) {
+    dialogBox.innerHTML = `* carregando batalha...<br>* ${loaded}/${total}`;
+    updateSansPosition();
+}
+
+function syncDragonFramesFromPreload() {
+    dragonFrames.length = 0;
+    for (let i = 1; i <= 6; i++) {
+        const frame = preloadedBattleImages.get(`imgs/dragonskull${i}.png`);
+        if (frame) dragonFrames.push(frame);
+    }
+}
+
+function preloadReturnBattleAssets(onProgress) {
+    const assets = [
+        ...RETURN_BATTLE_ASSETS.images.map(src => ({ type: "image", src })),
+        ...RETURN_BATTLE_ASSETS.audio.map(src => ({ type: "audio", src }))
+    ];
+
+    if (returnBattleAssetsPromise) {
+        return returnBattleAssetsPromise.then(() => {
+            if (onProgress) onProgress(assets.length, assets.length);
+        });
+    }
+
+    let loaded = 0;
+    if (onProgress) onProgress(loaded, assets.length);
+
+    returnBattleAssetsPromise = Promise.all(assets.map(asset => {
+        const loader = asset.type === "image" ? preloadImageAsset : preloadAudioAsset;
+
+        return loader(asset.src)
+            .catch(error => {
+                console.warn(error.message);
+            })
+            .then(() => {
+                loaded++;
+                if (onProgress) onProgress(loaded, assets.length);
+            });
+    })).then(() => {
+        syncDragonFramesFromPreload();
+    });
+
+    return returnBattleAssetsPromise;
+}
+
+function playBattleSound(src) {
+    const cached = preloadedBattleAudio.get(src);
+    const sound = cached ? cached.cloneNode(true) : new Audio(src);
+    sound.currentTime = 0;
+    const playPromise = sound.play();
+    if (playPromise) playPromise.catch(() => {});
+    return sound;
+}
 
 let heart;
 let dragonAttackStarted = false;
@@ -332,11 +487,15 @@ function startReturnBattle() {
 
     heart = document.createElement("img");
     heart.className = "battle-heart";
+    let heartReady = false;
 
     const speed = 2.5;
     const keys = {};
 
     function onHeartReady() {
+        if (heartReady) return;
+        heartReady = true;
+
         const VISUAL_W = 16;
         const ratio = heart.naturalHeight / heart.naturalWidth;
 
@@ -416,9 +575,7 @@ function startReturnBattle() {
         if (!dragonAttackStarted) {
             dragonAttackStarted = true;
             setTimeout(() => {
-                preloadDragonFrames(() => {
-                    startDragonAttack();
-                });
+                startDragonAttack();
             }, 600);
         }
     }
@@ -469,18 +626,10 @@ function animateDragonReverse(dragon, onFinish) {
 const dragonFrames = [];
 
 function preloadDragonFrames(callback) {
-    let loaded = 0;
-    const total = 6;
-
-    for (let i = 1; i <= total; i++) {
-        const img = new Image();
-        img.src = `imgs/dragonskull${i}.png`;
-        img.onload = () => {
-            loaded++;
-            if (loaded === total && callback) callback();
-        };
-        dragonFrames.push(img);
-    }
+    preloadReturnBattleAssets().then(() => {
+        syncDragonFramesFromPreload();
+        if (callback) callback();
+    });
 }
 
 function animateDragonOnce(dragon, onFinish) {
@@ -531,7 +680,7 @@ function startDragonAttack() {
 
         screen.appendChild(d);
 
-        new Audio("snd_spearappear.wav").play();
+        playBattleSound("snd_spearappear.wav");
 
         const boxTop = boxRect.top - screenRect.top;
         const finalTop = boxTop + boxRect.height / 2 - 96 / 2;
@@ -618,7 +767,7 @@ function fireBeamFromDragon(dragon) {
     }
 
     if (!dragonLaserSoundPlayed) {
-        new Audio("mus_sfx_rainbowbeam_1.wav").play();
+        playBattleSound("mus_sfx_rainbowbeam_1.wav");
         dragonLaserSoundPlayed = true;
     }
 
@@ -682,11 +831,11 @@ function explodeHeart(heart, callback) {
 
     heart.style.visibility = "hidden";
 
-    new Audio("snd_break1_c.wav").play();
+    playBattleSound("snd_break1_c.wav");
 
     setTimeout(() => {
 
-        new Audio("snd_break2_c.wav").play();
+        playBattleSound("snd_break2_c.wav");
         brokenHeart.remove();
 
         const debrisImgs = [
@@ -841,13 +990,16 @@ function confirmReturnToMenu() {
 
     typeChar();
 
-    const confirm = () => {
-        if (!typingDone) return;
+    const confirm = async () => {
+        if (!typingDone || returnBattlePreloading) return;
+        returnBattlePreloading = true;
 
         selectSound.currentTime = 0;
         selectSound.play();
 
         menuLocked = true;
+        span.style.pointerEvents = "none";
+        dialogBox.innerHTML = "";
 
         const stats = document.getElementById("stats");
         if (stats) stats.style.display = "none";
@@ -857,6 +1009,8 @@ function confirmReturnToMenu() {
 
         const hpBar = document.getElementById("hp-bar");
         if (hpBar) hpBar.style.display = "none";
+
+        await preloadReturnBattleAssets(updateReturnBattleLoading);
 
         dialogBox.classList.add("dialog-battle");
         dialogBox.getBoundingClientRect();

@@ -87,6 +87,8 @@ button,
   align-items: center;
   gap: 12px;
   min-width: 0;
+  cursor: default;
+  user-select: none;
 }
 
 .brand-mark {
@@ -282,20 +284,14 @@ h1 {
   cursor: pointer;
 }
 
-.project-row:hover,
-.project-row.is-clicked,
-.project-row:focus-visible {
+.project-row.is-previewing {
   background: #f2f2f2;
   color: #050505;
   outline: none;
 }
 
-.project-row:hover .project-desc,
-.project-row.is-clicked .project-desc,
-.project-row:focus-visible .project-desc,
-.project-row:hover .project-meta,
-.project-row.is-clicked .project-meta,
-.project-row:focus-visible .project-meta {
+.project-row.is-previewing .project-desc,
+.project-row.is-previewing .project-meta {
   color: #262626;
 }
 
@@ -415,15 +411,23 @@ h1 {
   cursor: pointer;
   font-size: 1.6rem;
   line-height: 1;
+  transition: border-color 120ms ease, color 120ms ease, background 120ms ease, box-shadow 120ms ease, transform 120ms ease;
 }
 
 .modal-close:hover,
 .modal-close:active,
 .modal-close:focus,
-.modal-close:focus-visible {
+.modal-close:focus-visible,
+.modal-close.is-closing {
   border-color: #e50914;
   color: #e50914;
+  background: rgba(229, 9, 20, 0.1);
+  box-shadow: 0 0 0 1px rgba(229, 9, 20, 0.55), 0 0 18px rgba(229, 9, 20, 0.38);
   outline: none;
+}
+
+.modal-close.is-closing {
+  transform: scale(0.9);
 }
 
 .video-frame {
