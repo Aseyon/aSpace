@@ -1,4 +1,5 @@
 const VIDEO_BASE_PATH = '../vds/';
+const COVER_FRAME_TIME = 0.08;
 
 const videos = [
   {
@@ -87,7 +88,7 @@ function renderVideos() {
   projectList.innerHTML = videos.map((video, index) => `
     <article class="project-row" tabindex="0" role="button" data-index="${index}" aria-label="Abrir ${video.title}">
       <div class="project-preview" aria-hidden="true">
-        <video src="${videoPath(video.file)}" muted playsinline preload="metadata"></video>
+        <video src="${videoPath(video.file)}" muted playsinline preload="auto"></video>
       </div>
       <div class="project-copy">
         <p class="project-meta">${video.id} / ${video.file}</p>
@@ -110,7 +111,49 @@ function renderVideos() {
     });
   });
 
+  projectList.querySelectorAll('.project-preview video').forEach((preview, index) => {
+    window.setTimeout(() => primePreviewCover(preview), index * 90);
+  });
+
   setupAutoPreview();
+}
+
+function getCoverFrameTime(preview) {
+  if (!Number.isFinite(preview.duration) || preview.duration <= COVER_FRAME_TIME) {
+    return 0;
+  }
+
+  return Math.min(COVER_FRAME_TIME, preview.duration - 0.02);
+}
+
+function primePreviewCover(preview) {
+  if (!preview) return;
+
+  const previewWrap = preview.closest('.project-preview');
+  const markCoverReady = () => previewWrap?.classList.add('has-cover');
+  const seekToCover = () => {
+    const coverTime = getCoverFrameTime(preview);
+
+    try {
+      preview.currentTime = coverTime;
+    } catch (error) {
+      markCoverReady();
+    }
+  };
+
+  if (preview.readyState >= 2) {
+    markCoverReady();
+  }
+
+  preview.addEventListener('loadeddata', markCoverReady, { once: true });
+  preview.addEventListener('seeked', markCoverReady, { once: true });
+
+  if (preview.readyState >= 1) {
+    seekToCover();
+  } else {
+    preview.addEventListener('loadedmetadata', seekToCover, { once: true });
+    preview.load();
+  }
 }
 
 function setPreviewState(preview, isPreviewing) {
@@ -152,7 +195,12 @@ function resetPreview(preview) {
   preview.dataset.previewToken = '';
   setPreviewState(preview, false);
   preview.pause();
-  preview.currentTime = 0;
+
+  try {
+    preview.currentTime = getCoverFrameTime(preview);
+  } catch (error) {
+    preview.currentTime = 0;
+  }
 }
 
 function stopAllPreviews() {
