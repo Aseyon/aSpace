@@ -68,7 +68,7 @@ function updateSelection() {
 options.forEach(opt => opt.setAttribute("data-text", opt.textContent));
 updateSelection();
 
-const memories = ["bk", "anime", "princess", "quack", "yt", "wit", "back", "rblx", "truth", "tranzit", "dntstarve", "rrpo", "rof2", "camping", "skyBO2", "F99n", "MASSACRE", "inferiores", "revo", "bathroom", "FNAFROBLOX", "monstros", "sinistro", "aura", "badtimetrio", "jogoruim", "BOneverdie",  "navio", "prota", "rango", "sonic"];
+const memories = ["bk", "anime", "princess", "quack", "yt", "wit", "back", "rblx", "truth", "tranzit", "dntstarve", "rrpo", "rof2", "camping", "skyBO2", "F99n", "MASSACRE", "inferiores", "revo", "bathroom", "FNAFROBLOX", "monstros", "sinistro", "aura", "badtimetrio", "jogoruim", "BOneverdie",  "navio", "prota", "rango", "sonic", "untildawn", "topodomundo", "ripdolores", "meccha", "justadream", "hotweels", "herobrine", "herobrine", "gromero", "five", "fcanibais", "exit8", "dustytrip2", "dustytrip", "dbd", "aqueda", "antesdaqueda"];
 let currentMemoryPage = 0;
 const memoriesPerPage = 6;
 let memTypingTimeouts = [];
@@ -112,7 +112,23 @@ const memoryDescriptions = {
     navio: "Propragando enganosa: quando há promessa de fazer um bom navio.",
     protagonista: "Óbvio, óbvio que eu sou o rei.",
     rango: "'Só preciso de uma bala...' VAI SE FODER",
-    sonic: "Left 4 Multiverso da Overdose 2."
+    sonic: "Left 4 Multiverso da Overdose 2.",
+    antesdaqueda: "Últimas imagens antes da queda.",
+    aqueda: "A queda.",
+    dbd: "Tudo que sobrou foi levado pela discórdia.",
+    dustytrip: "'O que você tem pra viagem?' Tudo e mais um pouco.",
+    dustytrip2: "Andando tranquilamente na favela em que roubamos.",
+    exit8: "Uma anomalia foi perdida[1] pixel do teto.",
+    fcanibais: "Furacão de canibais há 25mil km de você.",
+    five: "depois de sonhar tantos anos.. de fazer tantos planos..",
+    gromero: "George A. Romero morreu aqui.",
+    herobrine: "Mexa-se e você morre, olhe para trás e você morre. Respire muito alto e você morre.",
+    hotweels: "Carro véi podre, pelo menos é melhor que o antigo.",
+    justadream: "Acorde para realidade, isto é apenas um sonho. Você escolheu estar aqui, não se lembra?",
+    meccha: "'Eu conheço esse cachorro..'",
+    ripdolores: "Dolores Beatrice.. para sempre em meu coração. Só de pensar que nunca mais eu vou te ver.. dói..",
+    topodomundo: "O monte evereste não se compara a miiiim!",
+    untildawn: "Começamos bem, sempre que parecia impossível a gente se superava mostrando a nossa burrice."
 };
 
 function showMemory(memName) {

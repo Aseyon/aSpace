@@ -61,6 +61,12 @@ const videos = [
     title: 'FNAF',
     file: 'fnaf.mp4',
     description: "Imagens perdidas mostram guardas noturnos da pizzaria Freddy Fazbear's Pizza em seus últimos momentos."
+  },
+  {
+    id: 'mem_11',
+    title: 'Monopólio',
+    file: 'monopole.mp4',
+    description: 'Jogo de tabuleiro causa discórdia entre amigos e causa transtorno psícologico megalomania em rapaz oprimido seguido de delírios de grandeza.'
   }
 ];
 

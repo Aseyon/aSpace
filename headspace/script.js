@@ -23,7 +23,7 @@
     };
 
     const PORTRAIT_CAPTION_MAX_CHARS = 20;
-    const BOOK_FLIP_TIME = 800;
+    const BOOK_FLIP_TIME = 200;
     const MUSIC_FADE_DURATION = 2500;
     const MUSIC_FADE_STEPS = 50;
 
@@ -556,16 +556,13 @@
             animateCatArms("close");
 
             coverFront.style.zIndex = pages.length + 2;
+            setPagesVisible(false);
             coverFront.classList.remove("open");
             coverFront.classList.add("close");
             opened = false;
             currentPage = 0;
             resetPages();
             updateNavZones();
-
-            window.setTimeout(() => {
-                setPagesVisible(false);
-            }, BOOK_FLIP_TIME);
 
             requestAnimationFrame(() => {
                 bookWrap.style.transform = "translate(-50%, -50%) scale(1)";
@@ -587,35 +584,34 @@
         function closeBook() {
             if (!opened || animating || currentPage < pages.length) return;
 
-            const closeDuration = pages.length * 50 + 300;
             animating = true;
             animateCatArms("close");
 
-            pages.forEach((page, index) => {
-                window.setTimeout(() => {
-                    page.classList.remove("flipped");
-                    page.style.pointerEvents = "auto";
-                    updatePageStack();
-                }, index * 50);
+            opened = false;
+            currentPage = 0;
+            coverBack.style.zIndex = pages.length + 1;
+            coverFront.style.zIndex = pages.length + 2;
+            setPagesVisible(false);
+
+            pages.forEach((page) => {
+                page.classList.remove("flipped");
+                page.style.pointerEvents = "auto";
+            });
+
+            coverFront.classList.remove("open");
+            coverFront.classList.add("close");
+            updatePageStack();
+            updateNavZones();
+
+            requestAnimationFrame(() => {
+                bookWrap.style.transform = "translate(-50%, -50%) scale(1)";
             });
 
             window.setTimeout(() => {
+                coverBack.style.zIndex = 0;
                 coverFront.style.zIndex = pages.length + 2;
-                coverFront.classList.remove("open");
-                coverFront.classList.add("close");
-                opened = false;
-                currentPage = 0;
-                updateNavZones();
-
-                requestAnimationFrame(() => {
-                    bookWrap.style.transform = "translate(-50%, -50%) scale(1)";
-                });
-
-                window.setTimeout(() => {
-                    setPagesVisible(false);
-                    animating = false;
-                }, BOOK_FLIP_TIME);
-            }, closeDuration);
+                animating = false;
+            }, BOOK_FLIP_TIME);
         }
 
         if (coverSpine) coverSpine.style.zIndex = 0;
@@ -839,22 +835,22 @@
     }
 
     function initTextFitting() {
-        const initialSize = 18;
-        const minSize = 4;
+        const initialSize = 17;
+        const minSize = 8;
         let resizeFrame = null;
 
         function fitText() {
             $$(SELECTORS.textBlocks).forEach((block) => {
                 const paragraph = $("p", block);
-                const polaroid = block.closest(SELECTORS.pageLayout)?.querySelector(SELECTORS.polaroid);
-                if (!paragraph || !polaroid) return;
+                if (!paragraph) return;
 
                 let size = initialSize;
-                const maxHeight = polaroid.clientHeight;
+                const maxHeight = Math.max(0, block.clientHeight - 16);
+                const maxWidth = Math.max(0, block.clientWidth - 20);
 
                 paragraph.style.fontSize = `${size}px`;
 
-                while (paragraph.scrollHeight > maxHeight && size > minSize) {
+                while ((paragraph.scrollHeight > maxHeight || paragraph.scrollWidth > maxWidth) && size > minSize) {
                     size--;
                     paragraph.style.fontSize = `${size}px`;
                 }

@@ -182,7 +182,18 @@ const mp4Icons = [{
         glitchActive: false,
         glitchFrame: 0,
         glitchTimer: 0
-    }
+    },
+    {
+        x: 2900,
+        y: 1000,
+        video: "../vds/monopole.mp4",
+        width: 48,
+        height: 48,
+        activated: false,
+        glitchActive: false,
+        glitchFrame: 0,
+        glitchTimer: 0
+    },
 ];
 
 
