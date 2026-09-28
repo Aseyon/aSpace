@@ -84,6 +84,7 @@ let activeAutoPreview = null;
 let autoPreviewFrame = null;
 let autoPreviewReady = false;
 let closeButtonTimer = null;
+let siteReady = false;
 
 function videoPath(file) {
   return `${VIDEO_BASE_PATH}${file}`;
@@ -215,7 +216,7 @@ function stopAllPreviews() {
 }
 
 function getBestViewportPreview() {
-  if (!autoPreviewMedia.matches || videoModal.classList.contains('is-open')) return null;
+  if (!siteReady || !autoPreviewMedia.matches || videoModal.classList.contains('is-open')) return null;
 
   const previews = [...projectList.querySelectorAll('.project-preview video')];
   let bestPreview = null;
@@ -337,4 +338,131 @@ document.addEventListener('keydown', event => {
   }
 });
 
-renderVideos();
+const siteLoader = document.getElementById('siteLoader');
+const loaderStatus = document.getElementById('loaderStatus');
+const loaderProgress = document.getElementById('loaderProgress');
+
+function preloadImageAsset(src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.decoding = 'async';
+
+    const cleanup = () => {
+      image.removeEventListener('load', handleLoad);
+      image.removeEventListener('error', handleError);
+    };
+
+    const handleLoad = () => {
+      cleanup();
+      if (image.decode) {
+        image.decode().catch(() => {}).finally(() => resolve(image));
+      } else {
+        resolve(image);
+      }
+    };
+
+    const handleError = () => {
+      cleanup();
+      reject(new Error(`Unable to load image: ${src}`));
+    };
+
+    image.addEventListener('load', handleLoad, { once: true });
+    image.addEventListener('error', handleError, { once: true });
+    image.src = src;
+
+    if (image.complete) {
+      image.naturalWidth > 0 ? handleLoad() : handleError();
+    }
+  });
+}
+
+function preloadVideoAsset(src) {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video');
+    let settled = false;
+
+    video.className = 'preload-video-cache';
+    video.preload = 'auto';
+    video.muted = true;
+    video.playsInline = true;
+
+    const cleanup = () => {
+      video.removeEventListener('canplaythrough', handleReady);
+      video.removeEventListener('error', handleError);
+    };
+
+    const handleReady = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve(video);
+    };
+
+    const handleError = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(new Error(`Unable to load video: ${src}`));
+    };
+
+    video.addEventListener('canplaythrough', handleReady, { once: true });
+    video.addEventListener('error', handleError, { once: true });
+    video.src = src;
+    document.body.appendChild(video);
+    video.load();
+
+    if (video.readyState >= 4) handleReady();
+  });
+}
+
+function finishSiteLoading(failed) {
+  siteReady = true;
+  loaderProgress.style.width = '100%';
+  loaderStatus.textContent = failed
+    ? `archive ready // ${failed} unavailable`
+    : 'archive ready // all media loaded';
+  document.body.classList.remove('site-loading');
+  siteLoader.classList.add('is-ready');
+
+  window.setTimeout(() => {
+    document.querySelectorAll('.preload-video-cache').forEach(video => video.remove());
+    siteLoader.remove();
+    renderVideos();
+  }, 300);
+}
+
+function startSiteLoading() {
+  document.body.classList.add('site-loading');
+
+  const resources = [
+    ...[...document.images].map(image => ({ type: 'image', src: image.currentSrc || image.src })),
+    ...videos.map(video => ({ type: 'video', src: videoPath(video.file) }))
+  ];
+
+  let completed = 0;
+  let failed = 0;
+  loaderStatus.textContent = `preparing media 0/${resources.length}`;
+
+  const updateProgress = () => {
+    completed += 1;
+    loaderProgress.style.width = `${(completed / resources.length) * 100}%`;
+    loaderStatus.textContent = failed
+      ? `preparing media ${completed}/${resources.length} // ${failed} warning`
+      : `preparing media ${completed}/${resources.length}`;
+  };
+
+  const tasks = resources.map(resource => {
+    const load = resource.type === 'image'
+      ? preloadImageAsset(resource.src)
+      : preloadVideoAsset(resource.src);
+
+    return load.catch(error => {
+      failed += 1;
+      console.warn(error.message);
+    }).finally(updateProgress);
+  });
+
+  Promise.all(tasks).then(() => finishSiteLoading(failed));
+}
+
+startSiteLoading();

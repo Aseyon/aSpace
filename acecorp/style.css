@@ -26,6 +26,74 @@ body.modal-open {
   overflow: hidden;
 }
 
+body.site-loading {
+  overflow: hidden;
+}
+
+.site-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-content: center;
+  gap: 14px;
+  padding: 24px;
+  color: #f2f2f2;
+  background: #050505;
+  font-family: "Courier New", Courier, monospace;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 260ms ease, visibility 0s linear 0s;
+}
+
+.site-loader.is-ready {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 260ms ease, visibility 0s linear 260ms;
+}
+
+.loader-kicker,
+.loader-status {
+  color: #9a9a9a;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.loader-kicker {
+  color: #e50914;
+}
+
+.loader-title {
+  font-size: clamp(1.6rem, 5vw, 3.4rem);
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  text-transform: uppercase;
+}
+
+.loader-track {
+  width: min(420px, 82vw);
+  height: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  padding: 2px;
+}
+
+.loader-progress {
+  width: 0;
+  height: 100%;
+  background: #00ff85;
+  transition: width 180ms ease;
+}
+
+.preload-video-cache {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
 a {
   color: inherit;
   text-decoration: none;
