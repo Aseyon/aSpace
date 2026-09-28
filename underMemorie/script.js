@@ -69,6 +69,55 @@ options.forEach(opt => opt.setAttribute("data-text", opt.textContent));
 updateSelection();
 
 const memories = ["bk", "anime", "princess", "quack", "yt", "wit", "back", "rblx", "truth", "tranzit", "dntstarve", "rrpo", "rof2", "camping", "skyBO2", "F99n", "MASSACRE", "inferiores", "revo", "bathroom", "FNAFROBLOX", "monstros", "sinistro", "aura", "badtimetrio", "jogoruim", "BOneverdie",  "navio", "prota", "rango", "sonic", "untildawn", "topodomundo", "ripdolores", "meccha", "justadream", "hotweels", "herobrine", "herobrine", "gromero", "five", "fcanibais", "exit8", "dustytrip2", "dustytrip", "dbd", "aqueda", "antesdaqueda"];
+const MEMORY_IMAGE_SOURCES = Object.freeze({
+    bk: "../headspace/imgs/bk.png",
+    anime: "../headspace/imgs/anime.JPG",
+    princess: "../headspace/imgs/princess.jpg",
+    quack: "../headspace/imgs/quack.jpg",
+    yt: "../headspace/imgs/yt.png",
+    wit: "../headspace/imgs/wit.jpg",
+    back: "../headspace/imgs/back.jpg",
+    rblx: "../headspace/imgs/rblx.jpg",
+    truth: "../headspace/imgs/truth.png",
+    tranzit: "../headspace/imgs/tranzit.png",
+    dntstarve: "../headspace/imgs/dntstarve.png",
+    rrpo: "../headspace/imgs/rrpo.jpg",
+    rof2: "../headspace/imgs/rof2.jpg",
+    camping: "../headspace/imgs/camping.png",
+    skyBO2: "../headspace/imgs/skyBO2.png",
+    F99n: "../headspace/imgs/F99n.png",
+    MASSACRE: "../headspace/imgs/MASSACRE.png",
+    inferiores: "../headspace/imgs/inferiores.png",
+    revo: "../headspace/imgs/revo.png",
+    bathroom: "../headspace/imgs/bathroom.png",
+    FNAFROBLOX: "../headspace/imgs/FNAFROBLOX.png",
+    monstros: "../headspace/imgs/monstros.JPG",
+    sinistro: "../headspace/imgs/sinistro.jpg",
+    aura: "../headspace/imgs/aura.png",
+    badtimetrio: "../headspace/imgs/badtimetrio.png",
+    jogoruim: "../headspace/imgs/jogoruim.png",
+    BOneverdie: "../headspace/imgs/BOneverdie.jpg",
+    navio: "../headspace/imgs/navio.png",
+    prota: "../headspace/imgs/prota.png",
+    rango: "../headspace/imgs/rango.png",
+    sonic: "../headspace/imgs/sonic.JPG",
+    untildawn: "../headspace/imgs/untildawn.png",
+    topodomundo: "../headspace/imgs/topodomundo.png",
+    ripdolores: "../headspace/imgs/ripdolores.png",
+    meccha: "../headspace/imgs/meccha.png",
+    justadream: "../headspace/imgs/justadream.png",
+    hotweels: "../headspace/imgs/hotweels.png",
+    herobrine: "../headspace/imgs/herobrine.png",
+    gromero: "../headspace/imgs/gromero.png",
+    five: "../headspace/imgs/five.png",
+    fcanibais: "../headspace/imgs/fcanibais.png",
+    exit8: "../headspace/imgs/exit8.png",
+    dustytrip2: "../headspace/imgs/dustytrip2.png",
+    dustytrip: "../headspace/imgs/dustytrip.png",
+    dbd: "../headspace/imgs/dbd.png",
+    aqueda: "../headspace/imgs/aqueda.png",
+    antesdaqueda: "../headspace/imgs/antesdaqueda.png"
+});
 let currentMemoryPage = 0;
 const memoriesPerPage = 6;
 let memTypingTimeouts = [];
@@ -145,10 +194,10 @@ function showMemory(memName) {
     if (oldDesc) oldDesc.remove();
 
     const img = document.createElement("img");
-    img.src = `../headspace/imgs/${memName.toLowerCase().replace(/\s/g,"")}.png`;
+    img.src = MEMORY_IMAGE_SOURCES[memName] || `../headspace/imgs/${memName.replace(/\s/g,"")}.png`;
     img.onerror = () => {
         img.onerror = null;
-        img.src = `../headspace/imgs/${memName.toLowerCase().replace(/\s/g,"")}.jpg`;
+        img.src = `../headspace/imgs/${memName.replace(/\s/g,"")}.jpg`;
     };
     img.style.maxWidth = "100%";
     img.style.maxHeight = "200px";
@@ -422,20 +471,18 @@ function preloadAudioAsset(src) {
         const cleanup = () => {
             clearTimeout(timeout);
             audio.removeEventListener("canplaythrough", finish);
-            audio.removeEventListener("loadeddata", finish);
             audio.removeEventListener("error", fail);
         };
         const timeout = setTimeout(finish, 10000);
 
         audio.preload = "auto";
         audio.addEventListener("canplaythrough", finish, { once: true });
-        audio.addEventListener("loadeddata", finish, { once: true });
         audio.addEventListener("error", fail, { once: true });
 
         if (!cached) audio.src = src;
         audio.load();
 
-        if (audio.readyState >= 2) finish();
+        if (audio.readyState >= 4) finish();
     });
 }
 
@@ -1103,7 +1150,7 @@ options.forEach((opt, i) => {
 });
 
 document.addEventListener("keydown", e => {
-    if (screenState !== "menu") return;
+    if (menuLocked) return;
 
     if (e.key === "ArrowRight") {
         currentIndex = (currentIndex + 1) % options.length;
@@ -1121,7 +1168,9 @@ document.addEventListener("keydown", e => {
 });
 
 function updateSansPosition() {
-    sans.style.bottom = `${dialogBox.offsetHeight + 140}px`;
+    const menu = document.getElementById("menu");
+    const menuHeight = menu ? menu.offsetHeight : 0;
+    sans.style.bottom = `${Math.max(dialogBox.offsetHeight + 140, menuHeight + 16)}px`;
 }
 
 const observer = new MutationObserver(updateSansPosition);
@@ -1136,40 +1185,108 @@ updateSansPosition();
 const music = document.getElementById("bgMusic");
 music.volume = 0.1;
 
+[swapSound, selectSound, textSound, music].forEach(sound => {
+    sound.preload = "auto";
+});
+
 const loadingScreen = document.getElementById("loading-screen");
 const loadingBar = document.getElementById("loading-bar");
+const loadingMessage = document.getElementById("loading-message");
+const loadingStatus = document.getElementById("loading-status");
 
-const images = [...document.images];
-let loaded = 0;
+const SITE_IMAGE_ASSETS = [
+    "imgs/sans_head.png",
+    "imgs/sans_middle.png",
+    "imgs/sans_pants.png",
+    "imgs/sans_sig.png",
+    "imgs/sans_close.png",
+    "imgs/sans_blink1.png",
+    "imgs/sans_blink2.png",
+    "imgs/sans_menu.png",
+    "imgs/heart.png",
+    "imgs/dragonskull1.png",
+    "imgs/dragonskull2.png",
+    "imgs/dragonskull3.png",
+    "imgs/dragonskull4.png",
+    "imgs/dragonskull5.png",
+    "imgs/dragonskull6.png",
+    "imgs/broken_heart.png",
+    "imgs/heart_debris1.png",
+    "imgs/heart_debris2.png",
+    "imgs/heart_debris3.png",
+    "imgs/heart_debris4.png",
+    ...Object.values(MEMORY_IMAGE_SOURCES)
+];
 
-function updateLoading() {
-  loaded++;
+const SITE_AUDIO_ASSETS = [
+    "undertaleFallenDown.mp3",
+    "snd_txtsans.wav",
+    "snd_swap.wav",
+    "snd_select.wav",
+    "snd_blink.wav",
+    "snd_spearappear.wav",
+    "mus_sfx_rainbowbeam_1.wav",
+    "snd_break1_c.wav",
+    "snd_break2_c.wav"
+];
 
-  const percent = (loaded / images.length) * 100;
-  loadingBar.style.width = percent + "%";
+function preloadFontAsset() {
+    if (!document.fonts || !document.fonts.load) return Promise.resolve();
+    return document.fonts.load("14px 'Press Start 2P'").then(() => document.fonts.ready);
+}
 
-  if (loaded === images.length) finishLoading();
+function updateSiteLoading(done, total, failed) {
+    const percent = total ? (done / total) * 100 : 100;
+    loadingBar.style.width = `${percent}%`;
+    loadingStatus.textContent = failed
+        ? `* ${done}/${total} recursos processados (${failed} com aviso)`
+        : `* ${done}/${total} recursos carregados`;
 }
 
 function finishLoading() {
-  loadingBar.style.width = "100%";
+    loadingBar.style.width = "100%";
+    loadingMessage.innerHTML = "* pronto<span class=\"dots\"></span>";
+    loadingStatus.textContent = "* tudo preparado";
+    loadingScreen.classList.add("is-ready");
 
-  setTimeout(() => {
-    loadingScreen.style.opacity = "0";
-
-    setTimeout(() => {
-      loadingScreen.remove();
+    window.setTimeout(() => {
+        if (loadingScreen.isConnected) loadingScreen.remove();
     }, 500);
-
-  }, 300);
 }
 
-if (images.length === 0) {
-  finishLoading();
-} else {
-  images.forEach(img => {
-    img.complete
-      ? updateLoading()
-      : img.addEventListener("load", updateLoading, { once: true });
-  });
+function startSiteLoading() {
+    const imageSources = [...new Set([
+        ...SITE_IMAGE_ASSETS,
+        ...Array.from(document.images).map(img => img.currentSrc || img.src)
+    ])];
+    const audioSources = [...new Set(SITE_AUDIO_ASSETS)];
+    const resources = [
+        ...imageSources.map(src => ({ type: "image", src })),
+        ...audioSources.map(src => ({ type: "audio", src })),
+        { type: "font", src: "Press Start 2P" }
+    ];
+
+    let done = 0;
+    let failed = 0;
+    updateSiteLoading(done, resources.length, failed);
+
+    const loadResource = resource => {
+        if (resource.type === "font") return preloadFontAsset();
+        if (resource.type === "image") return preloadImageAsset(resource.src);
+        return preloadAudioAsset(resource.src);
+    };
+
+    const tasks = resources.map(resource => loadResource(resource)
+        .catch(error => {
+            failed++;
+            console.warn(`Recurso não carregado: ${resource.src}`, error);
+        })
+        .finally(() => {
+            done++;
+            updateSiteLoading(done, resources.length, failed);
+        }));
+
+    return Promise.all(tasks).then(() => finishLoading());
 }
+
+startSiteLoading();
