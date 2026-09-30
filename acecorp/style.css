@@ -5,6 +5,12 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+@font-face {
+  font-family: "MR ROBOT";
+  src: url("fonts/MR ROBOT.ttf") format("truetype");
+  font-display: swap;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -13,11 +19,7 @@ body {
   min-height: 100vh;
   margin: 0;
   color: #f2f2f2;
-  background:
-    linear-gradient(90deg, rgba(255, 0, 0, 0.08) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    #050505;
-  background-size: 72px 72px, 100% 18px, auto;
+  background: #050505;
   font-family: "Courier New", Courier, monospace;
   overflow-x: hidden;
 }
@@ -66,9 +68,11 @@ body.site-loading {
 }
 
 .loader-title {
+  font-family: "MR ROBOT", "Courier New", monospace;
+  color: #e50914;
   font-size: clamp(1.6rem, 5vw, 3.4rem);
-  font-weight: 700;
-  letter-spacing: -0.06em;
+  font-weight: 400;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
@@ -111,31 +115,6 @@ button,
   outline: none;
 }
 
-.screen-noise,
-.scanline {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-}
-
-.screen-noise {
-  z-index: 0;
-  opacity: 0.16;
-  background-image:
-    repeating-radial-gradient(circle at 17% 23%, rgba(255, 255, 255, 0.22) 0 1px, transparent 1px 5px),
-    repeating-radial-gradient(circle at 83% 71%, rgba(255, 0, 0, 0.24) 0 1px, transparent 1px 6px);
-  mix-blend-mode: screen;
-}
-
-.scanline {
-  z-index: 4;
-  background: repeating-linear-gradient(
-    180deg,
-    transparent 0 3px,
-    rgba(255, 255, 255, 0.045) 3px 4px
-  );
-}
-
 .site-header {
   position: sticky;
   top: 0;
@@ -143,8 +122,8 @@ button,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding: 18px clamp(18px, 5vw, 64px);
+  gap: 18px;
+  padding: 14px clamp(18px, 5vw, 64px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   background: rgba(5, 5, 5, 0.88);
   backdrop-filter: blur(10px);
@@ -161,8 +140,8 @@ button,
 
 .brand-mark {
   display: grid;
-  width: 48px;
-  height: 48px;
+  width: 42px;
+  height: 42px;
   place-items: center;
   overflow: hidden;
 }
@@ -172,25 +151,19 @@ button,
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 0 8px rgba(229, 9, 20, 0.42));
-}
-
-.brand-title,
-.brand-subtitle {
-  display: block;
-  line-height: 1.1;
+  filter: drop-shadow(0 0 8px rgb(196, 8, 8));
 }
 
 .brand-title {
-  font-size: 1rem;
-  font-weight: 700;
+  display: block;
+  line-height: 1.1;
+  font-family: "MR ROBOT", "Courier New", monospace;
+  color: #faf8f8;
+  letter-spacing: 0.06em;
 }
 
-.brand-subtitle {
-  margin-top: 4px;
-  color: #9a9a9a;
-  font-size: 0.75rem;
-  text-transform: uppercase;
+.brand-title {
+  font-size: 1.15rem;
 }
 
 .terminal-nav {
@@ -198,7 +171,7 @@ button,
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 14px;
+  gap: 12px;
   color: #cfcfcf;
   font-size: 0.82rem;
   text-transform: uppercase;
@@ -224,16 +197,10 @@ button,
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 7px 10px;
+  padding: 6px 9px;
   border: 1px solid rgba(229, 9, 20, 0.72) !important;
   color: #00ff85 !important;
-  background: rgba(229, 9, 20, 0.08) !important;
-  box-shadow: inset 0 0 18px rgba(229, 9, 20, 0.16);
-}
-
-.menu-return::before {
-  content: "root@archive:~$";
-  color: #e50914;
+  background: transparent !important;
 }
 
 .menu-return:hover,
@@ -250,11 +217,11 @@ main {
 }
 
 .hero {
-  min-height: 54vh;
+  min-height: 42vh;
   display: grid;
   align-content: end;
-  gap: 18px;
-  padding: clamp(52px, 8vw, 110px) clamp(18px, 5vw, 64px) 42px;
+  gap: 14px;
+  padding: clamp(42px, 7vw, 86px) clamp(18px, 5vw, 64px) 34px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.16);
 }
 
@@ -275,39 +242,23 @@ p {
 h1 {
   max-width: 980px;
   margin-bottom: 0;
-  color: #ffffff;
-  font-size: clamp(3rem, 12vw, 8.4rem);
+  color: #e50914;
+  font-family: "MR ROBOT", "Courier New", monospace;
+  font-size: clamp(3rem, 11vw, 7.2rem);
+  font-weight: 400;
+  letter-spacing: 0.03em;
   line-height: 0.9;
   text-transform: uppercase;
   text-shadow: 4px 0 #e50914, -2px 0 #00ff85;
 }
 
 .hero-copy {
-  max-width: 720px;
+  max-width: 640px;
   margin-bottom: 0;
   color: #d6d6d6;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 1.05rem;
-  line-height: 1.7;
-}
-
-.status-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  max-width: 980px;
-  color: #050505;
-  font-size: 0.78rem;
-  text-transform: uppercase;
-}
-
-.status-strip span {
-  display: inline-flex;
-  min-height: 34px;
-  align-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  background: #f2f2f2;
-  padding: 8px 12px;
+  font-size: 1rem;
+  line-height: 1.55;
 }
 
 .archive-shell {
@@ -324,6 +275,10 @@ h1 {
 
 .archive-header h2 {
   margin-bottom: 0;
+  font-family: "MR ROBOT", "Courier New", monospace;
+  color: #e50914;
+  font-weight: 400;
+  letter-spacing: 0.04em;
   font-size: 2.4rem;
   line-height: 1;
   text-transform: uppercase;
@@ -338,13 +293,13 @@ h1 {
 
 .project-list {
   display: grid;
-  gap: 22px;
+  gap: 16px;
 }
 
 .project-row {
   display: grid;
   grid-template-columns: clamp(220px, 24vw, 320px) minmax(0, 1fr) auto;
-  gap: 24px;
+  gap: 18px;
   align-items: center;
   border: 1px solid rgba(255, 255, 255, 0.16);
   color: #efefef;
@@ -358,8 +313,7 @@ h1 {
   outline: none;
 }
 
-.project-row.is-previewing .project-desc,
-.project-row.is-previewing .project-meta {
+.project-row.is-previewing .project-desc {
   color: #262626;
 }
 
@@ -394,19 +348,17 @@ h1 {
 .project-copy {
   display: grid;
   align-content: center;
-  gap: 12px;
-  min-height: 180px;
-  padding: 24px 0;
-}
-
-.project-meta {
-  color: #9d9d9d;
-  font-size: 0.78rem;
-  text-transform: uppercase;
+  gap: 9px;
+  min-height: 160px;
+  padding: 20px 0;
 }
 
 .project-title {
   margin-bottom: 0;
+  font-family: "MR ROBOT", "Courier New", monospace;
+  color: #e50914;
+  font-weight: 400;
+  letter-spacing: 0.03em;
   font-size: clamp(1.6rem, 4vw, 4.2rem);
   line-height: 0.95;
   text-transform: uppercase;
@@ -423,9 +375,9 @@ h1 {
 
 .project-action {
   display: grid;
-  width: 84px;
+  width: 60px;
   height: 100%;
-  min-height: 180px;
+  min-height: 160px;
   place-items: center;
   border-left: 1px solid rgba(255, 255, 255, 0.14);
   color: #e50914;
@@ -531,6 +483,10 @@ h1 {
 
 .modal-copy h2 {
   margin-bottom: 0;
+  font-family: "MR ROBOT", "Courier New", monospace;
+  color: #e50914;
+  font-weight: 400;
+  letter-spacing: 0.03em;
   font-size: 2rem;
   line-height: 1;
   text-transform: uppercase;
@@ -574,7 +530,7 @@ h1 {
   .project-action {
     width: 100%;
     height: auto;
-    min-height: 54px;
+    min-height: 48px;
     border-top: 1px solid rgba(255, 255, 255, 0.14);
     border-left: 0;
   }
@@ -597,12 +553,10 @@ h1 {
 
   h1 {
     font-size: 3rem;
-    text-shadow: 2px 0 #e50914, -1px 0 #00ff85;
+    text-shadow: 1px 0 #e50914;
   }
 
-  .status-strip span {
-    width: 100%;
-  }
+  .loader-title { font-size: 2rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

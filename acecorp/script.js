@@ -6,67 +6,67 @@ const videos = [
     id: 'mem_01',
     title: 'Content Warning',
     file: 'contentwarning1.mp4',
-    description: 'Quando a fama some pra bunda é esse tipo de coisa que as pessoas mais lerdas fazem.'
+    description: 'Quando a fama some pra bunda e esse tipo de coisa que as pessoas mais lerdas fazem.'
   },
   {
     id: 'mem_02',
-    title: 'Black Ops II - Herói',
+    title: 'Black Ops II - Heroi',
     file: 'blackops2_1.mp4',
-    description: 'Nem todo super-herói possui um chat. Às vezes ele só precisa de um controle e um bom coração.'
+    description: 'Nem todo super-heroi possui um chat. As vezes ele so precisa de um controle e um bom coracao.'
   },
   {
     id: 'mem_03',
     title: 'Apocalipse',
     file: '99apocalipse.mp4',
-    description: 'Imagens fortes! Companheiros são deixados para trás em resgate após 111 dias no inferno.'
+    description: 'Imagens fortes! Companheiros sao deixados para tras em resgate apos 111 dias no inferno.'
   },
   {
     id: 'mem_04',
     title: 'Locked Souls',
     file: 'lockedsouls.mp4',
-    description: 'Dentro da plataforma Roblox, um jogo de terror aparentemente comum se tornou um verdadeiro pesadelo vivido. Após uma sequência de acidentes trágicos e eventos perturbadores, aquele ambiente passou a ser conhecido como um dos lugares mais hostis da atualidade.'
+    description: 'Dentro da plataforma Roblox, um jogo de terror aparentemente comum se tornou um verdadeiro pesadelo vivido. Apos uma sequencia de acidentes tragicos e eventos perturbadores, aquele ambiente passou a ser conhecido como um dos lugares mais hostis da atualidade.'
   },
   {
     id: 'mem_05',
     title: 'Parque de Dinossauros',
     file: 'minePark1.mp4',
-    description: 'Memórias fortes.. o que começou como um sonho em uma escola se tornou realidade após anos de promessa.'
+    description: 'Memorias fortes.. o que comecou como um sonho em uma escola se tornou realidade apos anos de promessa.'
   },
   {
     id: 'mem_06',
     title: 'Hitman',
     file: 'cartas.mp4',
-    description: 'Misericórdia? A verdadeira misericórdia não existe perante a ira de alguém que outrora foi traído.'
+    description: 'Misericordia? A verdadeira misericordia nao existe perante a ira de alguem que outrora foi traido.'
   },
   {
     id: 'mem_07',
     title: 'Parque de Dinossauros II',
     file: 'mineDino.mp4',
-    description: 'Registros mostram nascimento de dinoussauro antes extintos. Dolores foi concebida ao mundo como primeira fêmea a nascer em solo Minecraftense.'
+    description: 'Registros mostram nascimento de dinoussauro antes extintos. Dolores foi concebida ao mundo como primeira femea a nascer em solo Minecraftense.'
   },
   {
     id: 'mem_08',
     title: 'Content Warning II',
     file: 'contentwarning2.mp4',
-    description: 'Em seguida na busca por mais visualizações lerdinhos retornam só para morrerem de novo.'
+    description: 'Em seguida na busca por mais visualizacoes lerdinhos retornam so para morrerem de novo.'
   },
   {
     id: 'mem_09',
     title: 'Massacre Escolar',
     file: 'massacre_escolar.mp4',
-    description: 'Registros fortes mostram imagens reais de massacre escolar em joguinho virtual. É acrescentado intenções assassinas ao final ser revelado verdadeira razão para esfaqueamento em ROBLOX - Massacre.'
+    description: 'Registros fortes mostram imagens reais de massacre escolar em joguinho virtual. E acrescentado intencoes assassinas ao final ser revelado verdadeira razao para esfaqueamento em ROBLOX - Massacre.'
   },
   {
     id: 'mem_10',
     title: 'FNAF',
     file: 'fnaf.mp4',
-    description: "Imagens perdidas mostram guardas noturnos da pizzaria Freddy Fazbear's Pizza em seus últimos momentos."
+    description: "Imagens perdidas mostram guardas noturnos da pizzaria Freddy Fazbear's Pizza em seus ultimos momentos."
   },
   {
     id: 'mem_11',
-    title: 'Monopólio',
+    title: 'Monopolio',
     file: 'monopole.mp4',
-    description: 'Jogo de tabuleiro causa discórdia entre amigos e causa transtorno psícologico megalomania em rapaz oprimido seguido de delírios de grandeza.'
+    description: 'Jogo de tabuleiro causa discordia entre amigos e causa transtorno psicologico megalomania em rapaz oprimido seguido de delirios de grandeza.'
   }
 ];
 
@@ -98,7 +98,6 @@ function renderVideos() {
         <video src="${videoPath(video.file)}" muted playsinline preload="auto"></video>
       </div>
       <div class="project-copy">
-        <p class="project-meta">${video.id} / ${video.file}</p>
         <h3 class="project-title">${video.title}</h3>
         <p class="project-desc">${video.description}</p>
       </div>
@@ -342,6 +341,11 @@ const siteLoader = document.getElementById('siteLoader');
 const loaderStatus = document.getElementById('loaderStatus');
 const loaderProgress = document.getElementById('loaderProgress');
 
+function preloadFontAsset() {
+  if (!document.fonts || !document.fonts.load) return Promise.resolve();
+  return document.fonts.load('32px "MR ROBOT"').then(() => document.fonts.ready);
+}
+
 function preloadImageAsset(src) {
   return new Promise((resolve, reject) => {
     const image = new Image();
@@ -436,7 +440,8 @@ function startSiteLoading() {
 
   const resources = [
     ...[...document.images].map(image => ({ type: 'image', src: image.currentSrc || image.src })),
-    ...videos.map(video => ({ type: 'video', src: videoPath(video.file) }))
+    ...videos.map(video => ({ type: 'video', src: videoPath(video.file) })),
+    { type: 'font', src: 'MR ROBOT' }
   ];
 
   let completed = 0;
@@ -454,7 +459,9 @@ function startSiteLoading() {
   const tasks = resources.map(resource => {
     const load = resource.type === 'image'
       ? preloadImageAsset(resource.src)
-      : preloadVideoAsset(resource.src);
+      : resource.type === 'video'
+        ? preloadVideoAsset(resource.src)
+        : preloadFontAsset();
 
     return load.catch(error => {
       failed += 1;

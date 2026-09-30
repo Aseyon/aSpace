@@ -997,7 +997,8 @@ function startGame() {
     loop();
 }
 
-let fakeProgress = 0;
+let loadingProgress = 0;
+let loadingFailed = 0;
 
 function drawLoading(progress) {
     const grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -1051,29 +1052,20 @@ function drawLoading(progress) {
     ctx.fillStyle = "#ccc";
     ctx.font = "20px monospace";
     ctx.textAlign = "center";
-    ctx.fillText("Carregando...", canvas.width / 2, barY - 15);
+    ctx.fillText(`Carregando... ${Math.round(progress)}%`, canvas.width / 2, barY - 15);
 }
 
 function updateLoading() {
-    if (fakeProgress < 100) fakeProgress += 0.4;
+    drawLoading(loadingProgress);
 
-    drawLoading(fakeProgress);
-
-    if (fakeProgress >= 100 && spritesLoaded) {
-
-        if (!loadingFinished) {
-
-            showTutorial();
-
-            startGame();
-        }
-
+    if (loadingProgress >= 100 && !loadingFinished) {
+        loadingFinished = true;
+        showTutorial();
+        startGame();
     } else {
         requestAnimationFrame(updateLoading);
     }
 }
-
-updateLoading();
 
 const tutorialOverlay = document.createElement("div");
 tutorialOverlay.style.position = "fixed";
@@ -1135,3 +1127,209 @@ window.addEventListener("keydown", e => {
         }
     }
 });
+
+const DARKROOM_IMAGE_ASSETS = [
+    "imgs/bed.png",
+    "imgs/bed1.png",
+    "imgs/bed2.png",
+    "imgs/cutscene_01.png",
+    "imgs/cutscene_02.png",
+    "imgs/cutscene_03.png",
+    "imgs/cutscene_04.png",
+    "imgs/cutscene_05.png",
+    "imgs/cutscene_06.png",
+    "imgs/cutscene_07.png",
+    "imgs/cutscene_08.png",
+    "imgs/cutscene_09.png",
+    "imgs/cutscene_10.png",
+    "imgs/glitch.png",
+    "imgs/glitch01.png",
+    "imgs/glitch02.png",
+    "imgs/glitch03.png",
+    "imgs/keys.png",
+    "imgs/mp4icon.png",
+    "imgs/Niko_Down1.png",
+    "imgs/Niko_Down2.png",
+    "imgs/Niko_Down3.png",
+    "imgs/Niko_Idle_Left.png",
+    "imgs/Niko_Idle_Right.png",
+    "imgs/Niko_Idle_Up.png",
+    "imgs/Niko_Idle.png",
+    "imgs/Niko_Left1.png",
+    "imgs/Niko_Left2.png",
+    "imgs/Niko_Left3.png",
+    "imgs/Niko_Right1.png",
+    "imgs/Niko_Right2.png",
+    "imgs/Niko_Right3.png",
+    "imgs/Niko_Up1.png",
+    "imgs/Niko_Up2.png",
+    "imgs/Niko_Up3.png",
+    "imgs/nikosleep.gif",
+    "imgs/pc_loading.png",
+    "imgs/pc_loading_warn.png",
+    "imgs/txt.png"
+];
+
+const DARKROOM_AUDIO_ASSETS = [
+    "glitch.wav",
+    "glitch1.wav",
+    "glitch3.wav",
+    "menu_buzzer.wav",
+    "menu_cancel.wav",
+    "menu_cursor.wav",
+    "menu_decision.wav",
+    "pc_granted.wav",
+    "pc_messagebox.wav",
+    "step_grass.wav",
+    "step_tile_soft01.wav",
+    "step_tile_soft02.wav",
+    "step_tile_soft03.wav",
+    "step_tile_soft04.wav"
+];
+
+function preloadImageAsset(src) {
+    return new Promise((resolve, reject) => {
+        const image = new Image();
+
+        const cleanup = () => {
+            image.removeEventListener("load", handleLoad);
+            image.removeEventListener("error", handleError);
+        };
+
+        const handleLoad = () => {
+            cleanup();
+            if (image.decode) {
+                image.decode().catch(() => {}).finally(() => resolve(image));
+            } else {
+                resolve(image);
+            }
+        };
+
+        const handleError = () => {
+            cleanup();
+            reject(new Error(`Imagem não carregada: ${src}`));
+        };
+
+        image.addEventListener("load", handleLoad, { once: true });
+        image.addEventListener("error", handleError, { once: true });
+        image.src = src;
+
+        if (image.complete) {
+            image.naturalWidth > 0 ? handleLoad() : handleError();
+        }
+    });
+}
+
+function preloadAudioAsset(src) {
+    return new Promise((resolve, reject) => {
+        const audio = new Audio();
+        let settled = false;
+
+        const cleanup = () => {
+            audio.removeEventListener("canplaythrough", handleReady);
+            audio.removeEventListener("error", handleError);
+        };
+
+        const handleReady = () => {
+            if (settled) return;
+            settled = true;
+            cleanup();
+            resolve(audio);
+        };
+
+        const handleError = () => {
+            if (settled) return;
+            settled = true;
+            cleanup();
+            reject(new Error(`Áudio não carregado: ${src}`));
+        };
+
+        audio.preload = "auto";
+        audio.addEventListener("canplaythrough", handleReady, { once: true });
+        audio.addEventListener("error", handleError, { once: true });
+        audio.src = src;
+        audio.load();
+
+        if (audio.readyState >= 4) handleReady();
+    });
+}
+
+function preloadVideoAsset(src) {
+    return new Promise((resolve, reject) => {
+        const video = document.createElement("video");
+        let settled = false;
+
+        video.className = "darkroom-preload-video";
+        video.preload = "auto";
+        video.muted = true;
+        video.playsInline = true;
+        video.style.position = "fixed";
+        video.style.width = "1px";
+        video.style.height = "1px";
+        video.style.opacity = "0";
+        video.style.pointerEvents = "none";
+
+        const cleanup = () => {
+            video.removeEventListener("canplaythrough", handleReady);
+            video.removeEventListener("error", handleError);
+        };
+
+        const handleReady = () => {
+            if (settled) return;
+            settled = true;
+            cleanup();
+            resolve(video);
+        };
+
+        const handleError = () => {
+            if (settled) return;
+            settled = true;
+            cleanup();
+            reject(new Error(`Vídeo não carregado: ${src}`));
+        };
+
+        video.addEventListener("canplaythrough", handleReady, { once: true });
+        video.addEventListener("error", handleError, { once: true });
+        video.src = src;
+        document.body.appendChild(video);
+        video.load();
+
+        if (video.readyState >= 4) handleReady();
+    });
+}
+
+function startRealLoading() {
+    const videoAssets = [...new Set(mp4Icons.map(icon => icon.video))];
+    const resources = [
+        ...DARKROOM_IMAGE_ASSETS.map(src => ({ type: "image", src })),
+        ...DARKROOM_AUDIO_ASSETS.map(src => ({ type: "audio", src })),
+        ...videoAssets.map(src => ({ type: "video", src }))
+    ];
+
+    let completed = 0;
+    const updateProgress = () => {
+        completed += 1;
+        loadingProgress = (completed / resources.length) * 100;
+    };
+
+    const tasks = resources.map(resource => {
+        const load = resource.type === "image"
+            ? preloadImageAsset(resource.src)
+            : resource.type === "audio"
+                ? preloadAudioAsset(resource.src)
+                : preloadVideoAsset(resource.src);
+
+        return load.catch(error => {
+            loadingFailed += 1;
+            console.warn(error.message);
+        }).finally(updateProgress);
+    });
+
+    Promise.all(tasks).then(() => {
+        loadingProgress = 100;
+        document.querySelectorAll(".darkroom-preload-video").forEach(video => video.remove());
+    });
+}
+
+startRealLoading();
+updateLoading();
