@@ -24,6 +24,10 @@
 
     const PORTRAIT_CAPTION_MAX_CHARS = 20;
     const BOOK_FLIP_TIME = 200;
+    const CLOSE_PAGE_STEP = 46;
+    const CLOSE_PAGE_TRANSITION = 560;
+    const CLOSE_PAGE_SETTLE = 110;
+    const CLOSE_COVER_TIME = 900;
     const MUSIC_FADE_DURATION = 2500;
     const MUSIC_FADE_STEPS = 50;
 
@@ -552,21 +556,20 @@
         function closeBookFromFront() {
             if (!opened || animating || currentPage !== 0) return;
 
-            lockAnimation();
+            animating = true;
             animateCatArms("close");
 
-            coverFront.style.zIndex = pages.length + 2;
-            setPagesVisible(false);
-            coverFront.classList.remove("open");
-            coverFront.classList.add("close");
             opened = false;
             currentPage = 0;
-            resetPages();
+            setPagesVisible(true);
+            coverFront.style.zIndex = 0;
+            pages.forEach((page) => {
+                page.style.pointerEvents = "none";
+                page.style.transition = `transform ${CLOSE_PAGE_TRANSITION}ms cubic-bezier(.22,.9,.33,1), z-index 0.22s linear`;
+            });
             updateNavZones();
 
-            requestAnimationFrame(() => {
-                bookWrap.style.transform = "translate(-50%, -50%) scale(1)";
-            });
+            window.setTimeout(finishBookClose, CLOSE_PAGE_SETTLE);
         }
 
         function previousPage() {
@@ -581,6 +584,60 @@
             updatePageStack();
         }
 
+        function finishBookClose() {
+            coverFront.style.zIndex = pages.length + 2;
+            coverFront.classList.remove("open");
+            coverFront.classList.add("close");
+
+            requestAnimationFrame(() => {
+                bookWrap.style.transform = "translate(-50%, -50%) scale(1)";
+            });
+
+            window.setTimeout(() => {
+                setPagesVisible(false);
+                coverBack.style.zIndex = 0;
+                coverFront.style.zIndex = pages.length + 2;
+
+                pages.forEach((page) => {
+                    page.classList.remove("flipped");
+                    page.style.pointerEvents = "auto";
+                    page.style.transition = "";
+                });
+
+                updatePageStack();
+                animating = false;
+            }, CLOSE_COVER_TIME);
+        }
+
+        function animatePagesIntoClosedBook() {
+            setPagesVisible(true);
+            coverFront.style.zIndex = 0;
+            coverBack.style.zIndex = 0;
+
+            pages.forEach((page) => {
+                page.style.pointerEvents = "none";
+                page.style.transition = `transform ${CLOSE_PAGE_TRANSITION}ms cubic-bezier(.22,.9,.33,1), z-index 0.22s linear`;
+            });
+
+            const flippedPages = pages
+                .filter((page) => page.classList.contains("flipped"))
+                .reverse();
+
+            flippedPages.forEach((page, index) => {
+                window.setTimeout(() => {
+                    page.classList.remove("flipped");
+                    updatePageStack();
+                }, index * CLOSE_PAGE_STEP);
+            });
+
+            const pagesMotionTime = Math.max(
+                CLOSE_PAGE_SETTLE,
+                (flippedPages.length - 1) * CLOSE_PAGE_STEP + CLOSE_PAGE_TRANSITION
+            );
+
+            window.setTimeout(finishBookClose, pagesMotionTime);
+        }
+
         function closeBook() {
             if (!opened || animating || currentPage < pages.length) return;
 
@@ -589,29 +646,8 @@
 
             opened = false;
             currentPage = 0;
-            coverBack.style.zIndex = pages.length + 1;
-            coverFront.style.zIndex = pages.length + 2;
-            setPagesVisible(false);
-
-            pages.forEach((page) => {
-                page.classList.remove("flipped");
-                page.style.pointerEvents = "auto";
-            });
-
-            coverFront.classList.remove("open");
-            coverFront.classList.add("close");
-            updatePageStack();
             updateNavZones();
-
-            requestAnimationFrame(() => {
-                bookWrap.style.transform = "translate(-50%, -50%) scale(1)";
-            });
-
-            window.setTimeout(() => {
-                coverBack.style.zIndex = 0;
-                coverFront.style.zIndex = pages.length + 2;
-                animating = false;
-            }, BOOK_FLIP_TIME);
+            animatePagesIntoClosedBook();
         }
 
         if (coverSpine) coverSpine.style.zIndex = 0;

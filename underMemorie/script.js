@@ -8,7 +8,7 @@ const swapSound = new Audio('snd_swap.wav');
 const selectSound = new Audio('snd_select.wav');
 const textSound = new Audio('snd_txtsans.wav');
 
-const signaturesList = ["\n* Rafael", "* Henry Braun", "* Kaizotto", "* Victor", "* Amanda"];
+const signaturesList = ["\n* Rafael", "* Henry Braun", "* Kaizotto", "* Victor", "* Amanda", "* Breno"];
 let typingTimeout = null;
 
 function typeText(text, callback) {
